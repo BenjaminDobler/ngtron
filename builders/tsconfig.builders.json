@@ -1,0 +1,11 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "module": "commonjs",
+    "outDir": "./dist",
+    "importHelpers": false,
+    "sourceMap": false,
+    "target": "es6"
+  },
+  "files": ["./src/serve/index.ts", "./src/build/index.ts"]
+}
