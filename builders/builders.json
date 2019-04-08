@@ -2,7 +2,7 @@
   "builders": {
     "serve": {
       "implementation": "./dist/serve",
-      "schema": ".dist/serve/schema.json",
+      "schema": "./dist/serve/schema.json",
       "description": "serve electron"
     },
     "build": {

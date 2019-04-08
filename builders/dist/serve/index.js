@@ -13,106 +13,97 @@ const build_angular_1 = require("@angular-devkit/build-angular");
 const rxjs_1 = require("rxjs");
 const operators_1 = require("rxjs/operators");
 const child_process_1 = require("child_process");
-exports.serveCustomWebpackBrowser = (options, context) => {
+exports.noneElectronWebpackConfigTransformFactory = options => ({ root }, browserWebpackConfig) => {
+    const IGNORES = ["fs", "electron", "path"];
+    browserWebpackConfig.externals = [
+        (function () {
+            return function (context, request, callback) {
+                if (IGNORES.indexOf(request) >= 0) {
+                    return callback(null, "'undefined'");
+                }
+                return callback();
+            };
+        })()
+    ];
+    return rxjs_1.of(browserWebpackConfig);
+};
+exports.electronWebpackConfigTransformFactory = options => ({ root }, browserWebpackConfig) => {
+    const IGNORES = ["fs", "electron", "path"];
+    browserWebpackConfig.externals = [
+        (function () {
+            return function (context, request, callback) {
+                if (IGNORES.indexOf(request) >= 0) {
+                    return callback(null, "require('" + request + "')");
+                }
+                return callback();
+            };
+        })()
+    ];
+    return rxjs_1.of(browserWebpackConfig);
+};
+exports.serverConfigTransformFactory = (options, browserOptions, context) => ({ root }, config) => {
+    const originalConfig = build_angular_1.buildServerConfig(root, options, browserOptions, context.logger);
+    //const {devServer} = mergeConfigs(config, {devServer: originalConfig});
+    return rxjs_1.of(originalConfig);
+};
+exports.execute = (options, context) => {
+    let serverOptions;
     function setup() {
         return __awaiter(this, void 0, void 0, function* () {
-            console.log("Setup");
             const browserTarget = architect_1.targetFromTargetString(options.browserTarget);
-            console.log("Browser target ", browserTarget);
-            const serverOptions = yield context.getTargetOptions(browserTarget);
-            console.log("Target Options", serverOptions);
-            const overrides = {
-                watch: false
-            };
-            const server = yield context.scheduleTarget(browserTarget, overrides);
-            let result;
-            try {
-                result = yield server.result;
-                console.log("Result ", result);
-                console.log("Port ", result.port);
-            }
-            catch (error) {
-                context.reportStatus("Error: " + error);
-            }
-            return context.getTargetOptions(browserTarget);
+            serverOptions = yield context.getTargetOptions(browserTarget);
+            const buildOptions = yield context.getTargetOptions({
+                project: context.target.project,
+                target: "build"
+            });
+            buildOptions.browserTarget = "app1:build";
+            buildOptions.port = 4200;
+            return buildOptions;
+            // return context.getTargetOptions(browserTarget) as unknown;
         });
     }
-    return rxjs_1.from(setup()).pipe(operators_1.switchMap(browserOptions => build_angular_1.serveWebpackBrowser(options, context)), operators_1.tap(x => console.log(x)));
+    return rxjs_1.from(setup()).pipe(operators_1.switchMap(browserOptions => {
+        const webpackTransformFactory = context.target.target === "serve-electron"
+            ? exports.electronWebpackConfigTransformFactory
+            : exports.noneElectronWebpackConfigTransformFactory;
+        return build_angular_1.serveWebpackBrowser(browserOptions, context, {
+            browserConfig: webpackTransformFactory(browserOptions),
+            serverConfig: exports.serverConfigTransformFactory(options, browserOptions, context)
+        });
+    }), operators_1.switchMap((x) => openElectron(x, options, context)), operators_1.mapTo({ success: true }));
 };
-function execute(options, context) {
-    return __awaiter(this, void 0, void 0, function* () {
-        console.log("Current Directory ", context.currentDirectory);
-        console.log("Options", options);
-        const browserTarget = architect_1.targetFromTargetString(options.browserTarget);
-        console.log("Browser target ", browserTarget);
-        const serverOptions = yield context.getTargetOptions(browserTarget);
-        console.log("Serve Options", serverOptions);
-        const buildOptions = yield context.getTargetOptions({
-            project: "app1",
-            target: "build"
-        });
-        console.log("build options ", buildOptions);
-        const overrides = {
-            watch: false
-        };
-        if (options.port !== undefined) {
-            overrides.port = options.port;
-        }
-        const server = yield context.scheduleTarget(browserTarget, overrides);
-        let result;
-        try {
-            result = yield server.result;
-            console.log("Result ", result);
-            console.log("Port ", result.port);
-        }
-        catch (error) {
-            context.reportStatus("Error: " + error);
-        }
-        // await wait(10000);
-        yield openElectron(options.electronMain, result.port);
-        return {
-            success: true
-        };
-    });
-}
-function wait(time) {
-    return __awaiter(this, void 0, void 0, function* () {
-        return new Promise((resolve, reject) => {
-            setTimeout(() => {
-                resolve();
-            }, time);
-        });
-    });
-}
 function isMac() {
     return /^darwin/.test(process.platform);
 }
-function openElectron(electronMain, port) {
-    const electronBin = isMac()
-        ? "./node_modules/.bin/electron"
-        : "node_modules/electron/dist/electron";
-    return new Promise((resolve, reject) => {
-        const ls = child_process_1.spawn(electronBin, [
-            electronMain,
-            "-port",
-            port + ""
-        ]);
-        ls.stdout.on("data", function (data) {
-            // Logger.info("ELECTRON WATCH (stdout): " + data.toString());
-        });
-        ls.stderr.on("data", function (data) {
-            // Logger.error("ELECTRON WATCH (stderr): " + data.toString());
-        });
-        ls.on("exit", function (code) {
-            // Logger.info("ELECTRON WATCH (exit): " + code.toString());
-            // reject(0);
-            resolve();
-        });
+function openElectron(x, options, context) {
+    return new rxjs_1.Observable(observer => {
+        if (context.target.target === "serve-electron") {
+            const electronBin = isMac()
+                ? "./node_modules/.bin/electron"
+                : "node_modules/electron/dist/electron";
+            const ls = child_process_1.spawn(electronBin, [
+                options.electronMain,
+                "-port",
+                x.port + ""
+            ]);
+            ls.stdout.on("data", function (data) {
+                // Logger.info("ELECTRON WATCH (stdout): " + data.toString());
+                context.logger.info(data.toString());
+            });
+            ls.stderr.on("data", function (data) {
+                // Logger.error("ELECTRON WATCH (stderr): " + data.toString());
+                context.logger.error(data.toString());
+            });
+            ls.on("exit", function (code) {
+                // Logger.info("ELECTRON WATCH (exit): " + code.toString());
+                // reject(0);
+                observer.next({ success: true });
+            });
+        }
+        else {
+            observer.next({ success: true });
+        }
     });
 }
-exports.default = architect_1.createBuilder(execute);
-/*
-export default createBuilder<DevServerBuilderSchema, DevServerBuilderOutput>(
-  serveCustomWebpackBrowser
-);
-*/
+exports.openElectron = openElectron;
+exports.default = architect_1.createBuilder(exports.execute);
