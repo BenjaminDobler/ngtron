@@ -54,6 +54,8 @@ export const electronWebpackConfigTransformFactory: (
     })()
   ];
 
+  browserWebpackConfig.target = "electron-renderer";
+
   return of(browserWebpackConfig);
 };
 

@@ -39,6 +39,7 @@ exports.electronWebpackConfigTransformFactory = options => ({ root }, browserWeb
             };
         })()
     ];
+    browserWebpackConfig.target = "electron-renderer";
     return rxjs_1.of(browserWebpackConfig);
 };
 exports.serverConfigTransformFactory = (options, browserOptions, context) => ({ root }, config) => {
