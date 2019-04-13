@@ -1,0 +1,10 @@
+import { BuilderContext, BuilderOutput } from "@angular-devkit/architect";
+import { DevServerBuilderOutput, DevServerBuilderSchema, BrowserConfigTransformFn } from "@angular-devkit/build-angular";
+import { Observable } from "rxjs";
+export declare const noneElectronWebpackConfigTransformFactory: (options: any) => BrowserConfigTransformFn;
+export declare const electronWebpackConfigTransformFactory: (options: any) => BrowserConfigTransformFn;
+export declare const serverConfigTransformFactory: any;
+export declare const execute: (options: DevServerBuilderSchema, context: BuilderContext) => Observable<BuilderOutput>;
+export declare function openElectron(x: DevServerBuilderOutput, options: any, context: BuilderContext): Observable<BuilderOutput>;
+declare const _default: import("@angular-devkit/architect/src/internal").Builder<DevServerBuilderSchema>;
+export default _default;

@@ -1,13 +1,13 @@
 {
   "builders": {
     "serve": {
-      "implementation": "./dist/serve",
-      "schema": "./dist/serve/schema.json",
+      "implementation": "./serve",
+      "schema": "./serve/schema.json",
       "description": "serve electron"
     },
     "build": {
       "implementation": "./dist/build",
-      "schema": "./dist/build/schema.json",
+      "schema": "./build/schema.json",
       "description": "build/package electron"
     }
   }
