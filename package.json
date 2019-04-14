@@ -1,11 +1,16 @@
 {
   "name": "@richapps/ngtron",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "author": {
     "name": "Benjamin Dobler",
     "email": "benz@richapps.de",
     "url": "http://www.richapps.de"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BenjaminDobler/ngtron"
+  },
+  "license": "MIT",
   "scripts": {
     "build": "tsc -p tsconfig.json"
   },
