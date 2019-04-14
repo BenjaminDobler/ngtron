@@ -6,7 +6,7 @@
       "description": "serve electron"
     },
     "build": {
-      "implementation": "./dist/build",
+      "implementation": "./build",
       "schema": "./build/schema.json",
       "description": "build/package electron"
     }

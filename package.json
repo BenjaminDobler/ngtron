@@ -1,6 +1,6 @@
 {
   "name": "@richapps/ngtron",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "author": {
     "name": "Benjamin Dobler",
     "email": "benz@richapps.de",
@@ -17,19 +17,21 @@
   "schematics": "./schematics/collection.json",
   "builders": "./builders/builders.json",
   "dependencies": {
-    "@angular-devkit/architect": "~0.800.0-beta.12",
-    "@angular-devkit/build-angular": "~0.800.0-beta.12",
-    "@angular-devkit/core": "7.3.8",
-    "@angular-devkit/schematics": "7.3.8",
+    "@angular-devkit/architect": "~0.800.0-beta.13",
+    "@angular-devkit/build-angular": "~0.800.0-beta.13",
+    "@angular-devkit/core": "~8.0.0-beta.8",
+    "@angular-devkit/schematics": "~8.0.0-beta.8",
     "@angular/compiler": "~8.0.0-beta.12",
     "@angular/compiler-cli": "~8.0.0-beta.12",
-    "@angular/core": "^7.2.13",
-    "@schematics/angular": "7.3.8",
+    "@angular/core": "~8.0.0-beta.12",
+    "@schematics/angular": "~8.0.0-beta.13",
     "@types/jasmine": "^3.0.0",
     "@types/node": "^8.0.31",
-    "electron": "^4.1.4",
-    "electron-packager": "^13.1.1",
     "jasmine": "^3.0.0",
     "typescript": "~3.4.3"
+  },
+  "devDependencies": {
+    "electron": "^4.1.4",
+    "electron-packager": "^13.1.1"
   }
 }
