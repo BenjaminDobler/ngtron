@@ -7,10 +7,10 @@ This project uses the new architect API which is currently in Beta and will ship
 
 # Installation
 
-ng add @richapps/ngtron
+`ng add @richapps/ngtron`
 
 # Usage
 
-ng run yourapp:serve-electron
+`ng run project:serve-electron`
 
-ng run yourapp:build-electron
+`ng run project:build-electron`

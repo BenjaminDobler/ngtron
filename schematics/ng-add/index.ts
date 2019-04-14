@@ -73,7 +73,7 @@ function updateArchitect(options: Schema): Rule {
     };
 
     architect["build-electron"] = {
-      builder: "./builders:build",
+      builder: "@richapps/ngtron:build",
       options: {
         browserTarget: projectName + ":build",
         electronMain: project.sourceRoot + "/electron.main.js",
@@ -109,8 +109,8 @@ function addPackageJsonDependencies(): Rule {
       { type: NodeDependencyType.Dev, version: "~4.0.0", name: "electron" },
       {
         type: NodeDependencyType.Dev,
-        version: "13.1.1",
-        name: "electron-packager"
+        version: "20.39.0",
+        name: "electron-builder"
       }
     ];
 
