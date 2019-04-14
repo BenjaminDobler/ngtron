@@ -79,7 +79,7 @@ function updateArchitect(options: Schema): Rule {
         electronMain: project.sourceRoot + "/electron.main.js",
         electronPackage: {
           version: "0.0.0",
-          name: project,
+          name: projectName,
           main: "electron.main.js",
           dependencies: {}
         },
