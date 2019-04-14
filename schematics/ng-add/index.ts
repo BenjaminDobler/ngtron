@@ -32,8 +32,6 @@ import { readFileSync } from "fs";
 
 export default function(options: Schema): Rule {
   return (tree: Tree, _context: SchematicContext) => {
-    console.log("ngtron add! ", options.project);
-
     return chain([
       updateArchitect(options),
       addElectronMain(options),
@@ -65,7 +63,7 @@ function updateArchitect(options: Schema): Rule {
     architect["build-electron"] = {
       builder: "./builders:build",
       options: {
-        browserTarget: "app1:build",
+        browserTarget: project + ":build",
         electronMain: "projects/" + project + "/electron.main.js",
         electronPackage: {
           version: "0.0.0",
@@ -131,7 +129,6 @@ function addElectronMain(options: Schema): Rule {
     // const workspace = getWorkspace(tree);
 
     const project = getProject(tree, options.project);
-    console.log("Project ", project);
 
     // compensate for lacking sourceRoot property
     // e. g. when project was migrated to ng7, sourceRoot is lacking
@@ -140,11 +137,6 @@ function addElectronMain(options: Schema): Rule {
     } else if (!project.sourceRoot) {
       project.sourceRoot = path.join(project.root, "src");
     }
-
-    // TODO: If project is not main project (src !== ""),
-    // use root instead of sourceRoot for tsconfig.modern.app.json
-    // (the path of polyfills.modern.ts is fine)
-
     const tsConfigModernRootPath = project.root
       ? project.root
       : project.sourceRoot;
