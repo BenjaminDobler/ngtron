@@ -43,28 +43,40 @@ export default function(options: Schema): Rule {
 
 function updateArchitect(options: Schema): Rule {
   return (tree: Tree, _context: SchematicContext) => {
-    const project = options.project;
     const workspace = getWorkspace(tree);
 
-    const architect = workspace.projects[project].architect;
+    const project = getProject(tree, options.project);
+    const projectName = options.project;
+
+    console.log("Project name ", projectName);
+
+    // console.log(project);
+
+    if (!project.sourceRoot && !project.root) {
+      project.sourceRoot = "src";
+    } else if (!project.sourceRoot) {
+      project.sourceRoot = path.join(project.root, "src");
+    }
+
+    const architect = workspace.projects[projectName].architect;
     if (!architect)
       throw new Error(
-        `expected node projects/${project}/architect in angular.json`
+        `expected node projects/${projectName}/architect in angular.json`
       );
 
     architect["serve-electron"] = {
       builder: "@richapps/ngtron:serve",
       options: {
-        browserTarget: project + ":serve",
-        electronMain: "projects/" + project + "/electron.main.js"
+        browserTarget: projectName + ":serve",
+        electronMain: project.sourceRoot + "/electron.main.js"
       }
     };
 
     architect["build-electron"] = {
       builder: "./builders:build",
       options: {
-        browserTarget: project + ":build",
-        electronMain: "projects/" + project + "/electron.main.js",
+        browserTarget: projectName + ":build",
+        electronMain: project.sourceRoot + "/electron.main.js",
         electronPackage: {
           version: "0.0.0",
           name: project,
@@ -78,9 +90,9 @@ function updateArchitect(options: Schema): Rule {
             npmRebuild: false,
             asar: false,
             directories: {
-              app: "dist/" + project,
-              output: "dist/" + project + "-electron",
-              buildResources: "projects/" + +"/electronResources"
+              app: "dist/" + projectName,
+              output: "dist/" + projectName + "-electron",
+              buildResources: project.root + "/electronResources"
             },
             electronVersion: "4.0.0"
           }
