@@ -3,12 +3,16 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const config_1 = require("@schematics/angular/utility/config");
 const dependencies_1 = require("@schematics/angular/utility/dependencies");
 const tasks_1 = require("@angular-devkit/schematics/tasks");
+const path = require("path");
+const project_1 = require("@schematics/angular/utility/project");
 const schematics_1 = require("@angular-devkit/schematics");
+const fs_1 = require("fs");
 function default_1(options) {
     return (tree, _context) => {
         console.log("ngtron add! ", options.project);
         return schematics_1.chain([
             updateArchitect(options),
+            addElectronMain(options),
             addPackageJsonDependencies(),
             installPackageJsonDependencies()
         ])(tree, _context);
@@ -62,9 +66,9 @@ function updateArchitect(options) {
 function addPackageJsonDependencies() {
     return (host, context) => {
         const dependencies = [
-            { type: dependencies_1.NodeDependencyType.Default, version: "~4.0.0", name: "electron" },
+            { type: dependencies_1.NodeDependencyType.Dev, version: "~4.0.0", name: "electron" },
             {
-                type: dependencies_1.NodeDependencyType.Default,
+                type: dependencies_1.NodeDependencyType.Dev,
                 version: "13.1.1",
                 name: "electron-packager"
             }
@@ -81,6 +85,36 @@ function installPackageJsonDependencies() {
         context.addTask(new tasks_1.NodePackageInstallTask());
         context.logger.log("info", `🔍 Installing packages...`);
         return host;
+    };
+}
+function addElectronMain(options) {
+    return (tree, _context) => {
+        // const project = options.project;
+        // const workspace = getWorkspace(tree);
+        const project = project_1.getProject(tree, options.project);
+        console.log("Project ", project);
+        // compensate for lacking sourceRoot property
+        // e. g. when project was migrated to ng7, sourceRoot is lacking
+        if (!project.sourceRoot && !project.root) {
+            project.sourceRoot = "src";
+        }
+        else if (!project.sourceRoot) {
+            project.sourceRoot = path.join(project.root, "src");
+        }
+        // TODO: If project is not main project (src !== ""),
+        // use root instead of sourceRoot for tsconfig.modern.app.json
+        // (the path of polyfills.modern.ts is fine)
+        const tsConfigModernRootPath = project.root
+            ? project.root
+            : project.sourceRoot;
+        const electronMain = fs_1.readFileSync(path.join(__dirname, "./files/electron.main.js"), {
+            encoding: "utf-8"
+        });
+        const tsConfigModernPath = path.join(tsConfigModernRootPath, "electron.main.js");
+        if (!tree.exists(tsConfigModernPath)) {
+            tree.create(tsConfigModernPath, electronMain);
+        }
+        return tree;
     };
 }
 //# sourceMappingURL=index.js.map

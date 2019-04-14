@@ -9,12 +9,16 @@ import {
   NodeDependencyType
 } from "@schematics/angular/utility/dependencies";
 import { NodePackageInstallTask } from "@angular-devkit/schematics/tasks";
+import * as path from "path";
+import { getProject } from "@schematics/angular/utility/project";
 
 import {
   chain,
   Rule,
   SchematicContext,
-  Tree
+  Tree,
+  apply,
+  url
 } from "@angular-devkit/schematics";
 import {
   ProjectType,
@@ -23,6 +27,8 @@ import {
 } from "@schematics/angular/utility/workspace-models";
 import { Observable, of } from "rxjs";
 import { concatMap, map } from "rxjs/operators";
+import { template } from "@angular-devkit/core";
+import { readFileSync } from "fs";
 
 export default function(options: Schema): Rule {
   return (tree: Tree, _context: SchematicContext) => {
@@ -30,6 +36,7 @@ export default function(options: Schema): Rule {
 
     return chain([
       updateArchitect(options),
+      addElectronMain(options),
       addPackageJsonDependencies(),
       installPackageJsonDependencies()
     ])(tree, _context);
@@ -115,5 +122,48 @@ function installPackageJsonDependencies(): Rule {
     context.logger.log("info", `🔍 Installing packages...`);
 
     return host;
+  };
+}
+
+function addElectronMain(options: Schema): Rule {
+  return (tree: Tree, _context: SchematicContext) => {
+    // const project = options.project;
+    // const workspace = getWorkspace(tree);
+
+    const project = getProject(tree, options.project);
+    console.log("Project ", project);
+
+    // compensate for lacking sourceRoot property
+    // e. g. when project was migrated to ng7, sourceRoot is lacking
+    if (!project.sourceRoot && !project.root) {
+      project.sourceRoot = "src";
+    } else if (!project.sourceRoot) {
+      project.sourceRoot = path.join(project.root, "src");
+    }
+
+    // TODO: If project is not main project (src !== ""),
+    // use root instead of sourceRoot for tsconfig.modern.app.json
+    // (the path of polyfills.modern.ts is fine)
+
+    const tsConfigModernRootPath = project.root
+      ? project.root
+      : project.sourceRoot;
+
+    const electronMain = readFileSync(
+      path.join(__dirname, "./files/electron.main.js"),
+      {
+        encoding: "utf-8"
+      }
+    );
+
+    const tsConfigModernPath = path.join(
+      tsConfigModernRootPath,
+      "electron.main.js"
+    );
+    if (!tree.exists(tsConfigModernPath)) {
+      tree.create(tsConfigModernPath, electronMain);
+    }
+
+    return tree;
   };
 }
