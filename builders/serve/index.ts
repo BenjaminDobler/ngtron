@@ -88,7 +88,7 @@ export const execute = (
       project: context.target.project,
       target: "build"
     });
-    buildOptions.browserTarget = "app1:build";
+    buildOptions.browserTarget = context.target.project + ":build";
     buildOptions.port = 4200;
     return buildOptions;
     // return context.getTargetOptions(browserTarget) as unknown;
