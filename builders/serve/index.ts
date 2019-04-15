@@ -13,7 +13,15 @@ import {
 } from "@angular-devkit/build-angular";
 import { Observable, of, from, pipe } from "rxjs";
 
-import { switchMap, tap, concatMap, mapTo } from "rxjs/operators";
+import {
+  switchMap,
+  tap,
+  concatMap,
+  mapTo,
+  first,
+  take,
+  filter
+} from "rxjs/operators";
 import { spawn, ChildProcess } from "child_process";
 import { join } from "@angular-devkit/core";
 import { Configuration as WebpackDevServerConfig } from "webpack-dev-server";
@@ -87,6 +95,7 @@ export const execute = (
     });
     buildOptions.browserTarget = context.target.project + ":build";
     buildOptions.port = options.port ? options.port : 4200;
+    buildOptions.watch = true;
     return buildOptions;
   }
 
@@ -109,6 +118,7 @@ export const execute = (
         }
       );
     }),
+    filter((val, index) => index < 1),
     switchMap((x: DevServerBuilderOutput) => openElectron(x, options, context)),
     mapTo({ success: true })
   );
@@ -124,6 +134,7 @@ export function openElectron(
   context: BuilderContext
 ): Observable<BuilderOutput> {
   return new Observable(observer => {
+    console.log("Open Electron ", x.port);
     if (context.target.target === "serve-electron") {
       const electronBin = isMac()
         ? "./node_modules/.bin/electron"
@@ -143,6 +154,7 @@ export function openElectron(
       });
 
       ls.on("exit", function(code) {
+        console.log("Exit");
         observer.next({ success: true });
       });
     } else {

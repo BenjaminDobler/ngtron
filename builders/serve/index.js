@@ -58,6 +58,7 @@ exports.execute = (options, context) => {
             });
             buildOptions.browserTarget = context.target.project + ":build";
             buildOptions.port = options.port ? options.port : 4200;
+            buildOptions.watch = true;
             return buildOptions;
         });
     }
@@ -69,13 +70,14 @@ exports.execute = (options, context) => {
             browserConfig: webpackTransformFactory(browserOptions),
             serverConfig: exports.serverConfigTransformFactory(options, browserOptions, context)
         });
-    }), operators_1.switchMap((x) => openElectron(x, options, context)), operators_1.mapTo({ success: true }));
+    }), operators_1.filter((val, index) => index < 1), operators_1.switchMap((x) => openElectron(x, options, context)), operators_1.mapTo({ success: true }));
 };
 function isMac() {
     return /^darwin/.test(process.platform);
 }
 function openElectron(x, options, context) {
     return new rxjs_1.Observable(observer => {
+        console.log("Open Electron ", x.port);
         if (context.target.target === "serve-electron") {
             const electronBin = isMac()
                 ? "./node_modules/.bin/electron"
@@ -92,6 +94,7 @@ function openElectron(x, options, context) {
                 context.logger.error(data.toString());
             });
             ls.on("exit", function (code) {
+                console.log("Exit");
                 observer.next({ success: true });
             });
         }
