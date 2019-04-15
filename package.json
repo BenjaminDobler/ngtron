@@ -1,6 +1,7 @@
 {
   "name": "@richapps/ngtron",
-  "version": "0.0.13",
+  "version": "0.0.14",
+  "description": "Easily serve and build angular based electron applications",
   "author": {
     "name": "Benjamin Dobler",
     "email": "benz@richapps.de",
@@ -17,7 +18,7 @@
   "schematics": "./schematics/collection.json",
   "builders": "./builders/builders.json",
   "dependencies": {
-    "@angular-devkit/architect": "~0.800.0-beta.13",
+    "@angular-devkit/architect": "~0.13.8",
     "@angular-devkit/build-angular": "~0.800.0-beta.13",
     "@angular-devkit/core": "~8.0.0-beta.8",
     "@angular-devkit/schematics": "~8.0.0-beta.8",

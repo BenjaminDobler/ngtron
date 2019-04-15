@@ -69,8 +69,6 @@ export const serverConfigTransformFactory: any = (
     browserOptions,
     context.logger
   );
-  //const {devServer} = mergeConfigs(config, {devServer: originalConfig});
-
   return of(originalConfig);
 };
 
@@ -80,7 +78,6 @@ export const execute = (
 ): Observable<BuilderOutput> => {
   let serverOptions;
 
-  console.log("Execute ");
   async function setup() {
     const browserTarget = targetFromTargetString(options.browserTarget);
     serverOptions = await context.getTargetOptions(browserTarget);
@@ -89,9 +86,8 @@ export const execute = (
       target: "build"
     });
     buildOptions.browserTarget = context.target.project + ":build";
-    buildOptions.port = 4200;
+    buildOptions.port = options.port ? options.port : 4200;
     return buildOptions;
-    // return context.getTargetOptions(browserTarget) as unknown;
   }
 
   return from(setup()).pipe(
@@ -139,18 +135,14 @@ export function openElectron(
         x.port + ""
       ]);
       ls.stdout.on("data", function(data) {
-        // Logger.info("ELECTRON WATCH (stdout): " + data.toString());
         context.logger.info(data.toString());
       });
 
       ls.stderr.on("data", function(data) {
-        // Logger.error("ELECTRON WATCH (stderr): " + data.toString());
         context.logger.error(data.toString());
       });
 
       ls.on("exit", function(code) {
-        // Logger.info("ELECTRON WATCH (exit): " + code.toString());
-        // reject(0);
         observer.next({ success: true });
       });
     } else {

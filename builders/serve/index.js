@@ -44,12 +44,10 @@ exports.electronWebpackConfigTransformFactory = options => ({ root }, browserWeb
 };
 exports.serverConfigTransformFactory = (options, browserOptions, context) => ({ root }, config) => {
     const originalConfig = build_angular_1.buildServerConfig(root, options, browserOptions, context.logger);
-    //const {devServer} = mergeConfigs(config, {devServer: originalConfig});
     return rxjs_1.of(originalConfig);
 };
 exports.execute = (options, context) => {
     let serverOptions;
-    console.log("Execute ");
     function setup() {
         return __awaiter(this, void 0, void 0, function* () {
             const browserTarget = architect_1.targetFromTargetString(options.browserTarget);
@@ -59,9 +57,8 @@ exports.execute = (options, context) => {
                 target: "build"
             });
             buildOptions.browserTarget = context.target.project + ":build";
-            buildOptions.port = 4200;
+            buildOptions.port = options.port ? options.port : 4200;
             return buildOptions;
-            // return context.getTargetOptions(browserTarget) as unknown;
         });
     }
     return rxjs_1.from(setup()).pipe(operators_1.switchMap(browserOptions => {
@@ -89,16 +86,12 @@ function openElectron(x, options, context) {
                 x.port + ""
             ]);
             ls.stdout.on("data", function (data) {
-                // Logger.info("ELECTRON WATCH (stdout): " + data.toString());
                 context.logger.info(data.toString());
             });
             ls.stderr.on("data", function (data) {
-                // Logger.error("ELECTRON WATCH (stderr): " + data.toString());
                 context.logger.error(data.toString());
             });
             ls.on("exit", function (code) {
-                // Logger.info("ELECTRON WATCH (exit): " + code.toString());
-                // reject(0);
                 observer.next({ success: true });
             });
         }
