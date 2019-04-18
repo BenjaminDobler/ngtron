@@ -23,15 +23,25 @@ import {
   filter
 } from "rxjs/operators";
 import { spawn, ChildProcess } from "child_process";
-import { join } from "@angular-devkit/core";
 import { Configuration as WebpackDevServerConfig } from "webpack-dev-server";
 import { Configuration } from "webpack";
+import { join } from "path";
+import { BUILD_IN_ELECTRON_MODULES, BUILD_IN_NODE_MODULES } from "../util/util";
 
-export const noneElectronWebpackConfigTransformFactory: (
-  options: any
-) => BrowserConfigTransformFn = options => ({ root }, browserWebpackConfig) => {
-  const IGNORES = ["fs", "electron", "path"];
-
+export const noneElectronWebpackConfigTransformFactory = (
+  options: any,
+  buildElectronOptions: any,
+  context: BuilderContext
+) => ({ root }, browserWebpackConfig) => {
+  const externalDependencies =
+    buildElectronOptions.electronPackage.dependencies;
+  const rootNodeModules = join(context.workspaceRoot, "node_modules");
+  let IGNORES = Object.keys(externalDependencies);
+  IGNORES = [
+    ...IGNORES,
+    ...BUILD_IN_ELECTRON_MODULES,
+    ...BUILD_IN_NODE_MODULES
+  ];
   browserWebpackConfig.externals = [
     (function() {
       return function(context, request, callback) {
@@ -46,14 +56,29 @@ export const noneElectronWebpackConfigTransformFactory: (
   return of(browserWebpackConfig);
 };
 
-export const electronWebpackConfigTransformFactory: (
-  options: any
-) => BrowserConfigTransformFn = options => ({ root }, browserWebpackConfig) => {
-  const IGNORES = ["fs", "electron", "path"];
+export const electronWebpackConfigTransformFactory: any = (
+  options: any,
+  buildElectronOptions: any,
+  context: BuilderContext
+) => ({ root }, browserWebpackConfig) => {
+  const externalDependencies =
+    buildElectronOptions.electronPackage.dependencies;
+  const rootNodeModules = join(context.workspaceRoot, "node_modules");
+  let IGNORES = Object.keys(externalDependencies);
+  IGNORES = [
+    ...IGNORES,
+    ...BUILD_IN_ELECTRON_MODULES,
+    ...BUILD_IN_NODE_MODULES
+  ];
+
   browserWebpackConfig.externals = [
     (function() {
       return function(context, request, callback) {
         if (IGNORES.indexOf(request) >= 0) {
+          if (externalDependencies.hasOwnProperty(request)) {
+            const modulePath = join(rootNodeModules, request);
+            return callback(null, "require('" + modulePath + "')");
+          }
           return callback(null, "require('" + request + "')");
         }
         return callback();
@@ -85,6 +110,7 @@ export const execute = (
   context: BuilderContext
 ): Observable<BuilderOutput> => {
   let serverOptions;
+  let buildElectronOptions;
 
   async function setup() {
     const browserTarget = targetFromTargetString(options.browserTarget);
@@ -96,23 +122,37 @@ export const execute = (
     buildOptions.browserTarget = context.target.project + ":build";
     buildOptions.port = options.port ? options.port : 4200;
     buildOptions.watch = true;
-    return buildOptions;
+
+    const electronBuildTarget = targetFromTargetString(
+      context.target.project + ":build-electron"
+    );
+
+    buildElectronOptions = await context.getTargetOptions(electronBuildTarget);
+
+    return {
+      buildOptions: buildOptions,
+      buildElectronOptions: buildElectronOptions
+    };
   }
 
   return from(setup()).pipe(
-    switchMap(browserOptions => {
+    switchMap(opt => {
       const webpackTransformFactory =
         context.target.target === "serve-electron"
           ? electronWebpackConfigTransformFactory
           : noneElectronWebpackConfigTransformFactory;
       return serveWebpackBrowser(
-        browserOptions as DevServerBuilderSchema,
+        opt.buildOptions as DevServerBuilderSchema,
         context,
         {
-          browserConfig: webpackTransformFactory(browserOptions),
+          browserConfig: webpackTransformFactory(
+            opt.buildOptions,
+            opt.buildElectronOptions,
+            context
+          ),
           serverConfig: serverConfigTransformFactory(
             options,
-            browserOptions,
+            opt.buildOptions,
             context
           )
         }

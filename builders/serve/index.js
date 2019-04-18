@@ -13,8 +13,17 @@ const build_angular_1 = require("@angular-devkit/build-angular");
 const rxjs_1 = require("rxjs");
 const operators_1 = require("rxjs/operators");
 const child_process_1 = require("child_process");
-exports.noneElectronWebpackConfigTransformFactory = options => ({ root }, browserWebpackConfig) => {
-    const IGNORES = ["fs", "electron", "path"];
+const path_1 = require("path");
+const util_1 = require("../util/util");
+exports.noneElectronWebpackConfigTransformFactory = (options, buildElectronOptions, context) => ({ root }, browserWebpackConfig) => {
+    const externalDependencies = buildElectronOptions.electronPackage.dependencies;
+    const rootNodeModules = path_1.join(context.workspaceRoot, "node_modules");
+    let IGNORES = Object.keys(externalDependencies);
+    IGNORES = [
+        ...IGNORES,
+        ...util_1.BUILD_IN_ELECTRON_MODULES,
+        ...util_1.BUILD_IN_NODE_MODULES
+    ];
     browserWebpackConfig.externals = [
         (function () {
             return function (context, request, callback) {
@@ -27,12 +36,23 @@ exports.noneElectronWebpackConfigTransformFactory = options => ({ root }, browse
     ];
     return rxjs_1.of(browserWebpackConfig);
 };
-exports.electronWebpackConfigTransformFactory = options => ({ root }, browserWebpackConfig) => {
-    const IGNORES = ["fs", "electron", "path"];
+exports.electronWebpackConfigTransformFactory = (options, buildElectronOptions, context) => ({ root }, browserWebpackConfig) => {
+    const externalDependencies = buildElectronOptions.electronPackage.dependencies;
+    const rootNodeModules = path_1.join(context.workspaceRoot, "node_modules");
+    let IGNORES = Object.keys(externalDependencies);
+    IGNORES = [
+        ...IGNORES,
+        ...util_1.BUILD_IN_ELECTRON_MODULES,
+        ...util_1.BUILD_IN_NODE_MODULES
+    ];
     browserWebpackConfig.externals = [
         (function () {
             return function (context, request, callback) {
                 if (IGNORES.indexOf(request) >= 0) {
+                    if (externalDependencies.hasOwnProperty(request)) {
+                        const modulePath = path_1.join(rootNodeModules, request);
+                        return callback(null, "require('" + modulePath + "')");
+                    }
                     return callback(null, "require('" + request + "')");
                 }
                 return callback();
@@ -48,6 +68,7 @@ exports.serverConfigTransformFactory = (options, browserOptions, context) => ({ 
 };
 exports.execute = (options, context) => {
     let serverOptions;
+    let buildElectronOptions;
     function setup() {
         return __awaiter(this, void 0, void 0, function* () {
             const browserTarget = architect_1.targetFromTargetString(options.browserTarget);
@@ -59,16 +80,21 @@ exports.execute = (options, context) => {
             buildOptions.browserTarget = context.target.project + ":build";
             buildOptions.port = options.port ? options.port : 4200;
             buildOptions.watch = true;
-            return buildOptions;
+            const electronBuildTarget = architect_1.targetFromTargetString(context.target.project + ":build-electron");
+            buildElectronOptions = yield context.getTargetOptions(electronBuildTarget);
+            return {
+                buildOptions: buildOptions,
+                buildElectronOptions: buildElectronOptions
+            };
         });
     }
-    return rxjs_1.from(setup()).pipe(operators_1.switchMap(browserOptions => {
+    return rxjs_1.from(setup()).pipe(operators_1.switchMap(opt => {
         const webpackTransformFactory = context.target.target === "serve-electron"
             ? exports.electronWebpackConfigTransformFactory
             : exports.noneElectronWebpackConfigTransformFactory;
-        return build_angular_1.serveWebpackBrowser(browserOptions, context, {
-            browserConfig: webpackTransformFactory(browserOptions),
-            serverConfig: exports.serverConfigTransformFactory(options, browserOptions, context)
+        return build_angular_1.serveWebpackBrowser(opt.buildOptions, context, {
+            browserConfig: webpackTransformFactory(opt.buildOptions, opt.buildElectronOptions, context),
+            serverConfig: exports.serverConfigTransformFactory(options, opt.buildOptions, context)
         });
     }), operators_1.filter((val, index) => index < 1), operators_1.switchMap((x) => openElectron(x, options, context)), operators_1.mapTo({ success: true }));
 };

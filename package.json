@@ -1,6 +1,6 @@
 {
   "name": "@richapps/ngtron",
-  "version": "0.0.15",
+  "version": "0.0.16",
   "description": "Easily serve and build angular based electron applications",
   "author": {
     "name": "Benjamin Dobler",
