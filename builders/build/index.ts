@@ -5,7 +5,7 @@ import {
 } from "@angular-devkit/architect";
 import {
   DevServerBuilderOutput,
-  DevServerBuilderSchema
+  DevServerBuilderOptions
 } from "@angular-devkit/build-angular";
 
 import { writeFileSync, copyFileSync } from "fs";
@@ -77,6 +77,6 @@ function isMac() {
   return /^darwin/.test(process.platform);
 }
 
-export default createBuilder<DevServerBuilderSchema, DevServerBuilderOutput>(
+export default createBuilder<DevServerBuilderOptions, DevServerBuilderOutput>(
   execute
 );

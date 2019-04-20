@@ -62,10 +62,6 @@ exports.electronWebpackConfigTransformFactory = (options, buildElectronOptions, 
     browserWebpackConfig.target = "electron-renderer";
     return rxjs_1.of(browserWebpackConfig);
 };
-exports.serverConfigTransformFactory = (options, browserOptions, context) => ({ root }, config) => {
-    const originalConfig = build_angular_1.buildServerConfig(root, options, browserOptions, context.logger);
-    return rxjs_1.of(originalConfig);
-};
 exports.execute = (options, context) => {
     let serverOptions;
     let buildElectronOptions;
@@ -92,9 +88,8 @@ exports.execute = (options, context) => {
         const webpackTransformFactory = context.target.target === "serve-electron"
             ? exports.electronWebpackConfigTransformFactory
             : exports.noneElectronWebpackConfigTransformFactory;
-        return build_angular_1.serveWebpackBrowser(opt.buildOptions, context, {
-            browserConfig: webpackTransformFactory(opt.buildOptions, opt.buildElectronOptions, context),
-            serverConfig: exports.serverConfigTransformFactory(options, opt.buildOptions, context)
+        return build_angular_1.executeDevServerBuilder(opt.buildOptions, context, {
+            webpackConfiguration: webpackTransformFactory(opt.buildOptions, opt.buildElectronOptions, context)
         });
     }), operators_1.filter((val, index) => index < 1), operators_1.switchMap((x) => openElectron(x, options, context)), operators_1.mapTo({ success: true }));
 };

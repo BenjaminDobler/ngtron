@@ -6,10 +6,8 @@ import {
 } from "@angular-devkit/architect";
 import {
   DevServerBuilderOutput,
-  DevServerBuilderSchema,
-  serveWebpackBrowser,
-  BrowserConfigTransformFn,
-  buildServerConfig
+  executeDevServerBuilder,
+  DevServerBuilderOptions
 } from "@angular-devkit/build-angular";
 import { Observable, of, from, pipe } from "rxjs";
 
@@ -91,22 +89,8 @@ export const electronWebpackConfigTransformFactory: any = (
   return of(browserWebpackConfig);
 };
 
-export const serverConfigTransformFactory: any = (
-  options,
-  browserOptions,
-  context
-) => ({ root }, config: Configuration): Observable<WebpackDevServerConfig> => {
-  const originalConfig = buildServerConfig(
-    root,
-    options,
-    browserOptions,
-    context.logger
-  );
-  return of(originalConfig);
-};
-
 export const execute = (
-  options: DevServerBuilderSchema,
+  options: DevServerBuilderOptions,
   context: BuilderContext
 ): Observable<BuilderOutput> => {
   let serverOptions;
@@ -141,18 +125,14 @@ export const execute = (
         context.target.target === "serve-electron"
           ? electronWebpackConfigTransformFactory
           : noneElectronWebpackConfigTransformFactory;
-      return serveWebpackBrowser(
-        opt.buildOptions as DevServerBuilderSchema,
+
+      return executeDevServerBuilder(
+        opt.buildOptions as DevServerBuilderOptions,
         context,
         {
-          browserConfig: webpackTransformFactory(
+          webpackConfiguration: webpackTransformFactory(
             opt.buildOptions,
             opt.buildElectronOptions,
-            context
-          ),
-          serverConfig: serverConfigTransformFactory(
-            options,
-            opt.buildOptions,
             context
           )
         }
@@ -203,6 +183,6 @@ export function openElectron(
   });
 }
 
-export default createBuilder<DevServerBuilderSchema, DevServerBuilderOutput>(
+export default createBuilder<DevServerBuilderOptions, DevServerBuilderOutput>(
   execute
 );
