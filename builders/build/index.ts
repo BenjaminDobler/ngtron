@@ -1,82 +1,58 @@
-import {
-  createBuilder,
-  targetFromTargetString,
-  BuilderContext
-} from "@angular-devkit/architect";
-import {
-  DevServerBuilderOutput,
-  DevServerBuilderOptions
-} from "@angular-devkit/build-angular";
-
-import { writeFileSync, copyFileSync } from "fs";
+import { createBuilder, targetFromTargetString, BuilderContext, BuilderOutput } from "@angular-devkit/architect";
+import { DevServerBuilderOutput, executeDevServerBuilder, DevServerBuilderOptions } from "@angular-devkit/build-angular";
+import { Observable, of, from, pipe } from "rxjs";
+import { switchMap, mapTo, filter, tap } from "rxjs/operators";
+import { buildElectron } from "../electron/electron";
+import { electronBuildWebpackConfigTransformFactory } from "../util/util";
+import { buildWebpackBrowser } from "@angular-devkit/build-angular/src/browser";
+import { copyFileSync, writeFileSync } from "fs";
 import { join, basename } from "path";
 
-const builder = require("electron-builder");
+export const execute = (options: DevServerBuilderOptions, context: BuilderContext): Observable<BuilderOutput> => {
+  let serverOptions;
+  let buildElectronOptions;
 
-async function execute(options: any, context: BuilderContext) {
-  console.log("Current Directory ", context.currentDirectory);
-  console.log("Options", options);
-  const browserTarget = targetFromTargetString(options.browserTarget);
+  async function setup() {
+    const browserTarget = targetFromTargetString(options.browserTarget);
+    serverOptions = await context.getTargetOptions(browserTarget);
+    const buildOptions = await context.getTargetOptions({
+      project: context.target.project,
+      target: "build"
+    });
+    buildOptions.browserTarget = context.target.project + ":build";
+    buildOptions.port = options.port ? options.port : 4200;
+    buildOptions.watch = false;
+    buildOptions.baseHref = "./";
 
-  console.log("Browser target ", browserTarget);
+    const electronBuildTarget = targetFromTargetString(context.target.project + ":build-electron");
 
-  const serverOptions = await context.getTargetOptions(browserTarget);
-  console.log("Serve Options", serverOptions);
-  const buildOptions = await context.getTargetOptions({
-    project: browserTarget.project,
-    target: "build"
-  });
-  console.log("build options ", buildOptions);
+    buildElectronOptions = await context.getTargetOptions(electronBuildTarget);
 
-  const overrides: Record<string, string | number | boolean> = {
-    watch: false,
-    baseHref: "./"
-  };
-
-  const server = await context.scheduleTarget(browserTarget, overrides);
-  let result;
-  try {
-    result = await server.result;
-  } catch (error) {
-    context.reportStatus("Error: " + error);
+    return {
+      buildOptions: buildOptions,
+      buildElectronOptions: buildElectronOptions
+    };
   }
 
-  // Copy electron main
-  const fromMain = join(context.workspaceRoot, options.electronMain);
-  const toMain = join(result.outputPath, basename(options.electronMain));
-  copyFileSync(fromMain, toMain);
+  return from(setup()).pipe(
+    switchMap(opt => {
+      return buildWebpackBrowser(opt.buildOptions as any, context, {
+        webpackConfiguration: electronBuildWebpackConfigTransformFactory(opt.buildOptions, opt.buildElectronOptions, context)
+      });
+    }),
+    filter((val, index) => index < 1),
+    tap(result => {
+      // Copy electron main
+      const fromMain = join(context.workspaceRoot, options.electronMain as string);
+      const toMain = join(result.outputPath, basename(options.electronMain as string));
+      copyFileSync(fromMain, toMain);
 
-  // write electron package to dist
-  writeFileSync(
-    join(result.outputPath, "package.json"),
-    JSON.stringify(options.electronPackage),
-    { encoding: "utf-8" }
+      // write electron package to dist
+      writeFileSync(join(result.outputPath, "package.json"), JSON.stringify(options.electronPackage), { encoding: "utf-8" });
+    }),
+    switchMap((x: any) => buildElectron(options.packagerConfig)),
+    mapTo({ success: true })
   );
+};
 
-  // Build!
-  try {
-    await builder.build(options.packagerConfig);
-  } catch (e) {
-    console.log("Publish error", e);
-  }
-
-  return {
-    success: true
-  };
-}
-
-async function wait(time) {
-  return new Promise((resolve, reject) => {
-    setTimeout(() => {
-      resolve();
-    }, time);
-  });
-}
-
-function isMac() {
-  return /^darwin/.test(process.platform);
-}
-
-export default createBuilder<DevServerBuilderOptions, DevServerBuilderOutput>(
-  execute
-);
+export default createBuilder<DevServerBuilderOptions, DevServerBuilderOutput>(execute);
