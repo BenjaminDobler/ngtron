@@ -1,30 +1,12 @@
 import { Schema } from "./schema";
-import {
-  getWorkspace,
-  updateWorkspace
-} from "@schematics/angular/utility/config";
-import {
-  addPackageJsonDependency,
-  NodeDependency,
-  NodeDependencyType
-} from "@schematics/angular/utility/dependencies";
+import { getWorkspace, updateWorkspace } from "@schematics/angular/utility/config";
+import { addPackageJsonDependency, NodeDependency, NodeDependencyType } from "@schematics/angular/utility/dependencies";
 import { NodePackageInstallTask } from "@angular-devkit/schematics/tasks";
 import * as path from "path";
 import { getProject } from "@schematics/angular/utility/project";
 
-import {
-  chain,
-  Rule,
-  SchematicContext,
-  Tree,
-  apply,
-  url
-} from "@angular-devkit/schematics";
-import {
-  ProjectType,
-  WorkspaceProject,
-  WorkspaceSchema
-} from "@schematics/angular/utility/workspace-models";
+import { chain, Rule, SchematicContext, Tree, apply, url } from "@angular-devkit/schematics";
+import { ProjectType, WorkspaceProject, WorkspaceSchema } from "@schematics/angular/utility/workspace-models";
 import { Observable, of } from "rxjs";
 import { concatMap, map } from "rxjs/operators";
 import { template } from "@angular-devkit/core";
@@ -32,12 +14,7 @@ import { readFileSync } from "fs";
 
 export default function(options: Schema): Rule {
   return (tree: Tree, _context: SchematicContext) => {
-    return chain([
-      updateArchitect(options),
-      addElectronMain(options),
-      addPackageJsonDependencies(),
-      installPackageJsonDependencies()
-    ])(tree, _context);
+    return chain([updateArchitect(options), addElectronMain(options), addPackageJsonDependencies(), installPackageJsonDependencies()])(tree, _context);
   };
 }
 
@@ -59,10 +36,7 @@ function updateArchitect(options: Schema): Rule {
     }
 
     const architect = workspace.projects[projectName].architect;
-    if (!architect)
-      throw new Error(
-        `expected node projects/${projectName}/architect in angular.json`
-      );
+    if (!architect) throw new Error(`expected node projects/${projectName}/architect in angular.json`);
 
     architect["serve-electron"] = {
       builder: "@richapps/ngtron:serve",
@@ -105,21 +79,11 @@ function updateArchitect(options: Schema): Rule {
 
 function addPackageJsonDependencies(): Rule {
   return (host: Tree, context: SchematicContext) => {
-    const dependencies: NodeDependency[] = [
-      { type: NodeDependencyType.Dev, version: "~4.0.0", name: "electron" },
-      {
-        type: NodeDependencyType.Dev,
-        version: "20.39.0",
-        name: "electron-builder"
-      }
-    ];
+    const dependencies: NodeDependency[] = [{ type: NodeDependencyType.Dev, version: "~4.0.0", name: "electron" }, { type: NodeDependencyType.Dev, version: "20.39.0", name: "electron-builder" }, { type: NodeDependencyType.Dev, version: "^8.10.46", name: "@types/node" }];
 
     dependencies.forEach(dependency => {
       addPackageJsonDependency(host, dependency);
-      context.logger.log(
-        "info",
-        `✅️ Added "${dependency.name}" into ${dependency.type}`
-      );
+      context.logger.log("info", `✅️ Added "${dependency.name}" into ${dependency.type}`);
     });
 
     return host;
@@ -130,7 +94,6 @@ function installPackageJsonDependencies(): Rule {
   return (host: Tree, context: SchematicContext) => {
     context.addTask(new NodePackageInstallTask());
     context.logger.log("info", `🔍 Installing packages...`);
-
     return host;
   };
 }
@@ -149,23 +112,15 @@ function addElectronMain(options: Schema): Rule {
     } else if (!project.sourceRoot) {
       project.sourceRoot = path.join(project.root, "src");
     }
-    const tsConfigModernRootPath = project.root
-      ? project.root
-      : project.sourceRoot;
+    const projectRootPath = project.root ? project.root : project.sourceRoot;
 
-    const electronMain = readFileSync(
-      path.join(__dirname, "./files/electron.main.js"),
-      {
-        encoding: "utf-8"
-      }
-    );
+    const electronMain = readFileSync(path.join(__dirname, "./files/electron.main.js"), {
+      encoding: "utf-8"
+    });
 
-    const tsConfigModernPath = path.join(
-      tsConfigModernRootPath,
-      "electron.main.js"
-    );
-    if (!tree.exists(tsConfigModernPath)) {
-      tree.create(tsConfigModernPath, electronMain);
+    const mainPath = path.join(projectRootPath, "electron.main.js");
+    if (!tree.exists(mainPath)) {
+      tree.create(mainPath, electronMain);
     }
 
     return tree;
