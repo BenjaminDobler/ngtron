@@ -9,12 +9,7 @@ const schematics_1 = require("@angular-devkit/schematics");
 const fs_1 = require("fs");
 function default_1(options) {
     return (tree, _context) => {
-        return schematics_1.chain([
-            updateArchitect(options),
-            addElectronMain(options),
-            addPackageJsonDependencies(),
-            installPackageJsonDependencies()
-        ])(tree, _context);
+        return schematics_1.chain([updateArchitect(options), addElectronMain(options), addPackageJsonDependencies(), installPackageJsonDependencies()])(tree, _context);
     };
 }
 exports.default = default_1;
@@ -73,14 +68,7 @@ function updateArchitect(options) {
 }
 function addPackageJsonDependencies() {
     return (host, context) => {
-        const dependencies = [
-            { type: dependencies_1.NodeDependencyType.Dev, version: "~4.0.0", name: "electron" },
-            {
-                type: dependencies_1.NodeDependencyType.Dev,
-                version: "20.39.0",
-                name: "electron-builder"
-            }
-        ];
+        const dependencies = [{ type: dependencies_1.NodeDependencyType.Dev, version: "~4.0.0", name: "electron" }, { type: dependencies_1.NodeDependencyType.Dev, version: "20.39.0", name: "electron-builder" }, { type: dependencies_1.NodeDependencyType.Dev, version: "^8.10.46", name: "@types/node" }];
         dependencies.forEach(dependency => {
             dependencies_1.addPackageJsonDependency(host, dependency);
             context.logger.log("info", `✅️ Added "${dependency.name}" into ${dependency.type}`);
@@ -108,15 +96,13 @@ function addElectronMain(options) {
         else if (!project.sourceRoot) {
             project.sourceRoot = path.join(project.root, "src");
         }
-        const tsConfigModernRootPath = project.root
-            ? project.root
-            : project.sourceRoot;
+        const projectRootPath = project.root ? project.root : project.sourceRoot;
         const electronMain = fs_1.readFileSync(path.join(__dirname, "./files/electron.main.js"), {
             encoding: "utf-8"
         });
-        const tsConfigModernPath = path.join(tsConfigModernRootPath, "electron.main.js");
-        if (!tree.exists(tsConfigModernPath)) {
-            tree.create(tsConfigModernPath, electronMain);
+        const mainPath = path.join(projectRootPath, "electron.main.js");
+        if (!tree.exists(mainPath)) {
+            tree.create(mainPath, electronMain);
         }
         return tree;
     };
