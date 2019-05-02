@@ -5,14 +5,14 @@ import { ChildProcess, spawn } from "child_process";
 import { isMac } from "../util/util";
 const builder = require("electron-builder");
 
-export function openElectron(x: DevServerBuilderOutput, options: any, context: BuilderContext): Observable<BuilderOutput> {
+export function openElectron(x: DevServerBuilderOutput, electronMain: string, context: BuilderContext): Observable<BuilderOutput> {
   return new Observable(observer => {
-    console.log("Open Electron ", x.port);
+    console.log("Open Electron ", electronMain);
 
     if (context.target.target === "serve-electron") {
       const electronBin = isMac() ? "./node_modules/.bin/electron" : "node_modules/electron/dist/electron";
 
-      const ls: ChildProcess = spawn(electronBin, [options.electronMain, "-port", x.port + ""]);
+      const ls: ChildProcess = spawn(electronBin, [electronMain]);
       ls.stdout.on("data", function(data) {
         context.logger.info(data.toString());
       });

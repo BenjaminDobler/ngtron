@@ -9,11 +9,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const architect_1 = require("@angular-devkit/architect");
-const build_angular_1 = require("@angular-devkit/build-angular");
 const rxjs_1 = require("rxjs");
 const operators_1 = require("rxjs/operators");
 const electron_1 = require("../electron/electron");
 const util_1 = require("../util/util");
+const browser_1 = require("@angular-devkit/build-angular/src/browser");
+const ts = require("typescript");
 exports.execute = (options, context) => {
     let serverOptions;
     let buildElectronOptions;
@@ -28,6 +29,7 @@ exports.execute = (options, context) => {
             buildOptions.browserTarget = context.target.project + ":build";
             buildOptions.port = options.port ? options.port : 4200;
             buildOptions.watch = true;
+            buildOptions.baseHref = "./";
             const electronBuildTarget = architect_1.targetFromTargetString(context.target.project + ":build-electron");
             buildElectronOptions = yield context.getTargetOptions(electronBuildTarget);
             return {
@@ -36,12 +38,19 @@ exports.execute = (options, context) => {
             };
         });
     }
+    util_1.compile([options.electronMain], {
+        noEmitOnError: true,
+        noImplicitAny: true,
+        target: ts.ScriptTarget.ES2015,
+        module: ts.ModuleKind.CommonJS,
+        outDir: "./dist/ngtube/",
+    });
     return rxjs_1.from(setup()).pipe(operators_1.switchMap(opt => {
         const webpackTransformFactory = context.target.target === "serve-electron" ? util_1.electronServeWebpackConfigTransformFactory : util_1.noneElectronWebpackConfigTransformFactory;
-        return build_angular_1.executeDevServerBuilder(opt.buildOptions, context, {
-            webpackConfiguration: webpackTransformFactory(opt.buildOptions, opt.buildElectronOptions, context)
+        return browser_1.buildWebpackBrowser(opt.buildOptions, context, {
+            webpackConfiguration: util_1.electronBuildWebpackConfigTransformFactory(opt.buildOptions, opt.buildElectronOptions, context)
         });
-    }), operators_1.filter((val, index) => index < 1), operators_1.switchMap((x) => electron_1.openElectron(x, options, context)), operators_1.mapTo({ success: true }));
+    }), operators_1.filter((val, index) => index < 1), operators_1.switchMap((x) => electron_1.openElectron(x, "./dist/ngtube/electron.js", context)), operators_1.mapTo({ success: true }));
 };
 exports.default = architect_1.createBuilder(exports.execute);
 //# sourceMappingURL=index.js.map

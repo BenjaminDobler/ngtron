@@ -4,12 +4,12 @@ const rxjs_1 = require("rxjs");
 const child_process_1 = require("child_process");
 const util_1 = require("../util/util");
 const builder = require("electron-builder");
-function openElectron(x, options, context) {
+function openElectron(x, electronMain, context) {
     return new rxjs_1.Observable(observer => {
-        console.log("Open Electron ", x.port);
+        console.log("Open Electron ", electronMain);
         if (context.target.target === "serve-electron") {
             const electronBin = util_1.isMac() ? "./node_modules/.bin/electron" : "node_modules/electron/dist/electron";
-            const ls = child_process_1.spawn(electronBin, [options.electronMain, "-port", x.port + ""]);
+            const ls = child_process_1.spawn(electronBin, [electronMain]);
             ls.stdout.on("data", function (data) {
                 context.logger.info(data.toString());
             });

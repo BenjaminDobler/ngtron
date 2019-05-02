@@ -7,3 +7,5 @@ export declare const noneElectronWebpackConfigTransformFactory: (options: any, b
 }, browserWebpackConfig: any) => import("rxjs").Observable<any>;
 export declare const electronServeWebpackConfigTransformFactory: any;
 export declare const electronBuildWebpackConfigTransformFactory: any;
+import * as ts from "typescript";
+export declare function compile(fileNames: string[], options: ts.CompilerOptions): void;

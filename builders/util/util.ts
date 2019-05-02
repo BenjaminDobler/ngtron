@@ -1,6 +1,6 @@
-import { join } from "path";
-import { BuilderContext } from "@angular-devkit/architect";
-import { of } from "rxjs";
+import {join} from "path";
+import {BuilderContext} from "@angular-devkit/architect";
+import {of} from "rxjs";
 
 export const BUILD_IN_NODE_MODULES = ["fs", "path"];
 export const BUILD_IN_ELECTRON_MODULES = ["electron", "app", "shell"];
@@ -9,13 +9,13 @@ export function isMac() {
   return /^darwin/.test(process.platform);
 }
 
-export const noneElectronWebpackConfigTransformFactory = (options: any, buildElectronOptions: any, context: BuilderContext) => ({ root }, browserWebpackConfig) => {
+export const noneElectronWebpackConfigTransformFactory = (options: any, buildElectronOptions: any, context: BuilderContext) => ({root}, browserWebpackConfig) => {
   const externalDependencies = buildElectronOptions.electronPackage.dependencies;
   let EXTERNALS = Object.keys(externalDependencies);
   EXTERNALS = [...EXTERNALS, ...BUILD_IN_ELECTRON_MODULES, ...BUILD_IN_NODE_MODULES];
   browserWebpackConfig.externals = [
-    (function() {
-      return function(context, request, callback) {
+    (function () {
+      return function (context, request, callback) {
         if (EXTERNALS.indexOf(request) >= 0) {
           return callback(null, "'undefined'");
         }
@@ -35,8 +35,8 @@ export const electronServeWebpackConfigTransformFactory: any = (options: any, bu
     EXTERNALS = [...EXTERNALS, ...BUILD_IN_ELECTRON_MODULES, ...BUILD_IN_NODE_MODULES];
 
     webpackConfig.externals = [
-      (function() {
-        return function(context, request, callback) {
+      (function () {
+        return function (context, request, callback) {
           if (EXTERNALS.indexOf(request) >= 0) {
             if (externalDependencies.hasOwnProperty(request)) {
               const modulePath = join(rootNodeModules, request);
@@ -61,8 +61,8 @@ export const electronBuildWebpackConfigTransformFactory: any = (options: any, bu
     EXTERNALS = [...EXTERNALS, ...BUILD_IN_ELECTRON_MODULES, ...BUILD_IN_NODE_MODULES];
 
     webpackConfig.externals = [
-      (function() {
-        return function(context, request, callback) {
+      (function () {
+        return function (context, request, callback) {
           if (EXTERNALS.indexOf(request) >= 0) {
             return callback(null, "require('" + request + "')");
           }
@@ -73,6 +73,42 @@ export const electronBuildWebpackConfigTransformFactory: any = (options: any, bu
 
     webpackConfig.target = "electron-renderer";
     webpackConfig.optimization.splitChunks = false; // What the F!
+
     return webpackConfig;
   };
 };
+
+
+import * as ts from "typescript";
+
+export function compile(fileNames: string[], options: ts.CompilerOptions): void {
+  let program = ts.createProgram(fileNames, options);
+  let emitResult = program.emit();
+
+  let allDiagnostics = ts
+    .getPreEmitDiagnostics(program)
+    .concat(emitResult.diagnostics);
+
+  allDiagnostics.forEach(diagnostic => {
+    if (diagnostic.file) {
+      let {line, character} = diagnostic.file.getLineAndCharacterOfPosition(
+        diagnostic.start!
+      );
+      let message = ts.flattenDiagnosticMessageText(
+        diagnostic.messageText,
+        "\n"
+      );
+      console.log(
+        `${diagnostic.file.fileName} (${line + 1},${character + 1}): ${message}`
+      );
+    } else {
+      console.log(
+        `${ts.flattenDiagnosticMessageText(diagnostic.messageText, "\n")}`
+      );
+    }
+  });
+
+  let exitCode = emitResult.emitSkipped ? 1 : 0;
+  console.log(`Process exiting with code '${exitCode}'.`);
+  //process.exit(exitCode);
+}
