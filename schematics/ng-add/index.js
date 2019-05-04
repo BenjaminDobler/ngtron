@@ -69,7 +69,12 @@ function updateArchitect(options) {
 function addPackageJsonDependencies() {
     return (host, context) => {
         // TODO: Get latest electroin dependency or let user choose
-        const dependencies = [{ type: dependencies_1.NodeDependencyType.Dev, version: "~4.0.0", name: "electron" }, { type: dependencies_1.NodeDependencyType.Dev, version: "20.39.0", name: "electron-builder" }, { type: dependencies_1.NodeDependencyType.Dev, version: "^8.10.46", name: "@types/node" }];
+        const dependencies = [
+            { type: dependencies_1.NodeDependencyType.Dev, version: "~4.0.0", name: "electron" },
+            { type: dependencies_1.NodeDependencyType.Dev, version: "20.39.0", name: "electron-builder" },
+            { type: dependencies_1.NodeDependencyType.Dev, version: "^8.10.46", name: "@types/node" },
+            { type: dependencies_1.NodeDependencyType.Dev, version: "^0.2.0", name: "electron-reloader" }
+        ];
         dependencies.forEach(dependency => {
             dependencies_1.addPackageJsonDependency(host, dependency);
             context.logger.log("info", `✅️ Added "${dependency.name}" into ${dependency.type}`);

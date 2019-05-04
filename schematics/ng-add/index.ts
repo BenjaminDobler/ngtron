@@ -1,18 +1,18 @@
-import { Schema } from "./schema";
-import { getWorkspace, updateWorkspace } from "@schematics/angular/utility/config";
-import { addPackageJsonDependency, NodeDependency, NodeDependencyType } from "@schematics/angular/utility/dependencies";
-import { NodePackageInstallTask } from "@angular-devkit/schematics/tasks";
+import {Schema} from "./schema";
+import {getWorkspace, updateWorkspace} from "@schematics/angular/utility/config";
+import {addPackageJsonDependency, NodeDependency, NodeDependencyType} from "@schematics/angular/utility/dependencies";
+import {NodePackageInstallTask} from "@angular-devkit/schematics/tasks";
 import * as path from "path";
-import { getProject } from "@schematics/angular/utility/project";
+import {getProject} from "@schematics/angular/utility/project";
 
-import { chain, Rule, SchematicContext, Tree, apply, url } from "@angular-devkit/schematics";
-import { ProjectType, WorkspaceProject, WorkspaceSchema } from "@schematics/angular/utility/workspace-models";
-import { Observable, of } from "rxjs";
-import { concatMap, map } from "rxjs/operators";
-import { template } from "@angular-devkit/core";
-import { readFileSync } from "fs";
+import {chain, Rule, SchematicContext, Tree, apply, url} from "@angular-devkit/schematics";
+import {ProjectType, WorkspaceProject, WorkspaceSchema} from "@schematics/angular/utility/workspace-models";
+import {Observable, of} from "rxjs";
+import {concatMap, map} from "rxjs/operators";
+import {template} from "@angular-devkit/core";
+import {readFileSync} from "fs";
 
-export default function(options: Schema): Rule {
+export default function (options: Schema): Rule {
   return (tree: Tree, _context: SchematicContext) => {
     return chain([updateArchitect(options), addElectronMain(options), addPackageJsonDependencies(), installPackageJsonDependencies()])(tree, _context);
   };
@@ -81,7 +81,12 @@ function addPackageJsonDependencies(): Rule {
   return (host: Tree, context: SchematicContext) => {
 
     // TODO: Get latest electroin dependency or let user choose
-    const dependencies: NodeDependency[] = [{ type: NodeDependencyType.Dev, version: "~4.0.0", name: "electron" }, { type: NodeDependencyType.Dev, version: "20.39.0", name: "electron-builder" }, { type: NodeDependencyType.Dev, version: "^8.10.46", name: "@types/node" }];
+    const dependencies: NodeDependency[] = [
+      {type: NodeDependencyType.Dev, version: "~4.0.0", name: "electron"},
+      {type: NodeDependencyType.Dev, version: "20.39.0", name: "electron-builder"},
+      {type: NodeDependencyType.Dev, version: "^8.10.46", name: "@types/node"},
+      {type: NodeDependencyType.Dev, version: "^0.2.0", name: "electron-reloader"}
+    ];
 
     dependencies.forEach(dependency => {
       addPackageJsonDependency(host, dependency);

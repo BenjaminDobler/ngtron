@@ -1,7 +1,7 @@
-import { createBuilder, targetFromTargetString, BuilderContext, BuilderOutput } from "@angular-devkit/architect";
-import { DevServerBuilderOutput, executeDevServerBuilder, DevServerBuilderOptions } from "@angular-devkit/build-angular";
-import { Observable, of, from, pipe } from "rxjs";
-import { switchMap, mapTo, filter } from "rxjs/operators";
+import {createBuilder, targetFromTargetString, BuilderContext, BuilderOutput} from "@angular-devkit/architect";
+import {DevServerBuilderOutput, executeDevServerBuilder, DevServerBuilderOptions} from "@angular-devkit/build-angular";
+import {Observable, of, from, pipe} from "rxjs";
+import {switchMap, mapTo, filter, tap} from "rxjs/operators";
 import {openElectron, reloadElectron} from "../electron/electron";
 import {
   noneElectronWebpackConfigTransformFactory,
@@ -10,6 +10,8 @@ import {
 } from "../util/util";
 import {buildWebpackBrowser} from "@angular-devkit/build-angular/src/browser";
 import * as ts from "typescript";
+import {basename, join} from "path";
+import {copyFileSync, writeFileSync} from "fs";
 
 
 export const execute = (options: DevServerBuilderOptions, context: BuilderContext): Observable<BuilderOutput> => {
@@ -28,6 +30,14 @@ export const execute = (options: DevServerBuilderOptions, context: BuilderContex
     buildOptions.watch = true;
     buildOptions.baseHref = "./";
 
+    compile([options.electronMain as string], {
+      noEmitOnError: true,
+      noImplicitAny: true,
+      target: ts.ScriptTarget.ES2015,
+      module: ts.ModuleKind.CommonJS,
+      outDir: buildOptions.outputPath as string
+    });
+
 
     const electronBuildTarget = targetFromTargetString(context.target.project + ":build-electron");
 
@@ -39,37 +49,36 @@ export const execute = (options: DevServerBuilderOptions, context: BuilderContex
     };
   }
 
-  compile([options.electronMain as string], {
-    noEmitOnError: true,
-    noImplicitAny: true,
-    target: ts.ScriptTarget.ES2015,
-    module: ts.ModuleKind.CommonJS,
-    outDir: "./dist/ngtube/",
-
-  })
 
   let count = -1;
 
   return from(setup()).pipe(
     switchMap(opt => {
-      console.log("Target", context.target.target);
-      const webpackTransformFactory = context.target.target === "serve-electron" ? electronServeWebpackConfigTransformFactory : noneElectronWebpackConfigTransformFactory;
+      // const webpackTransformFactory = context.target.target === "serve-electron" ? electronServeWebpackConfigTransformFactory : noneElectronWebpackConfigTransformFactory;
 
       return buildWebpackBrowser(opt.buildOptions as any, context, {
         webpackConfiguration: electronBuildWebpackConfigTransformFactory(opt.buildOptions, opt.buildElectronOptions, context)
       });
     }),
     //filter((val, index) => index < 1),
+    tap(result => {
+      // Copy electron main
+      const fromMain = join(context.workspaceRoot, options.electronMain as string);
+      const toMain = join(result.outputPath, basename(options.electronMain as string));
+      copyFileSync(fromMain, toMain);
+
+      // write electron package to dist
+      writeFileSync(join(result.outputPath, "package.json"), JSON.stringify(options.electronPackage), {encoding: "utf-8"});
+    }),
     switchMap((x: any) => {
-      console.log("Switch ", x);
       count++;
       if (count < 1) {
-        return openElectron(x, "./dist/ngtube/electron.js", context)
+        return openElectron(x, join(x.outputPath, "electron.js"), context)
       } else {
         return reloadElectron(x, context);
       }
     }),
-    mapTo({ success: true })
+    mapTo({success: true})
   );
 };
 
