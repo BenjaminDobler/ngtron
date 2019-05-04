@@ -45,12 +45,25 @@ exports.execute = (options, context) => {
         module: ts.ModuleKind.CommonJS,
         outDir: "./dist/ngtube/",
     });
+    let count = -1;
     return rxjs_1.from(setup()).pipe(operators_1.switchMap(opt => {
+        console.log("Target", context.target.target);
         const webpackTransformFactory = context.target.target === "serve-electron" ? util_1.electronServeWebpackConfigTransformFactory : util_1.noneElectronWebpackConfigTransformFactory;
         return browser_1.buildWebpackBrowser(opt.buildOptions, context, {
             webpackConfiguration: util_1.electronBuildWebpackConfigTransformFactory(opt.buildOptions, opt.buildElectronOptions, context)
         });
-    }), operators_1.filter((val, index) => index < 1), operators_1.switchMap((x) => electron_1.openElectron(x, "./dist/ngtube/electron.js", context)), operators_1.mapTo({ success: true }));
+    }), 
+    //filter((val, index) => index < 1),
+    operators_1.switchMap((x) => {
+        console.log("Switch ", x);
+        count++;
+        if (count < 1) {
+            return electron_1.openElectron(x, "./dist/ngtube/electron.js", context);
+        }
+        else {
+            return electron_1.reloadElectron(x, context);
+        }
+    }), operators_1.mapTo({ success: true }));
 };
 exports.default = architect_1.createBuilder(exports.execute);
 //# sourceMappingURL=index.js.map

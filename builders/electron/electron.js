@@ -27,6 +27,13 @@ function openElectron(x, electronMain, context) {
     });
 }
 exports.openElectron = openElectron;
+function reloadElectron(x, context) {
+    return new rxjs_1.Observable(observer => {
+        console.log("Reload Electron ");
+        observer.next({ success: true });
+    });
+}
+exports.reloadElectron = reloadElectron;
 function buildElectron(config) {
     return new rxjs_1.Observable(observer => {
         builder.build(config).then(() => {

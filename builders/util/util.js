@@ -25,6 +25,7 @@ exports.noneElectronWebpackConfigTransformFactory = (options, buildElectronOptio
     return rxjs_1.of(browserWebpackConfig);
 };
 exports.electronServeWebpackConfigTransformFactory = (options, buildElectronOptions, context) => {
+    console.log("Electron Serve Webpack");
     return webpackConfig => {
         const externalDependencies = buildElectronOptions.electronPackage.dependencies;
         const rootNodeModules = path_1.join(context.workspaceRoot, "node_modules");
@@ -33,6 +34,7 @@ exports.electronServeWebpackConfigTransformFactory = (options, buildElectronOpti
         webpackConfig.externals = [
             (function () {
                 return function (context, request, callback) {
+                    console.log("Request ", request);
                     if (EXTERNALS.indexOf(request) >= 0) {
                         if (externalDependencies.hasOwnProperty(request)) {
                             const modulePath = path_1.join(rootNodeModules, request);

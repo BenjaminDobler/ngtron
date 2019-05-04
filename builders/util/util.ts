@@ -28,6 +28,7 @@ export const noneElectronWebpackConfigTransformFactory = (options: any, buildEle
 };
 
 export const electronServeWebpackConfigTransformFactory: any = (options: any, buildElectronOptions: any, context: BuilderContext) => {
+  console.log("Electron Serve Webpack");
   return webpackConfig => {
     const externalDependencies = buildElectronOptions.electronPackage.dependencies;
     const rootNodeModules = join(context.workspaceRoot, "node_modules");
@@ -37,6 +38,7 @@ export const electronServeWebpackConfigTransformFactory: any = (options: any, bu
     webpackConfig.externals = [
       (function () {
         return function (context, request, callback) {
+          console.log("Request ", request);
           if (EXTERNALS.indexOf(request) >= 0) {
             if (externalDependencies.hasOwnProperty(request)) {
               const modulePath = join(rootNodeModules, request);

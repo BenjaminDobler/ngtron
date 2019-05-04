@@ -42,7 +42,7 @@ function updateArchitect(options: Schema): Rule {
       builder: "@richapps/ngtron:serve",
       options: {
         browserTarget: projectName + ":serve",
-        electronMain: project.sourceRoot + "/electron.main.js"
+        electronMain: project.sourceRoot + "/electron.ts"
       }
     };
 
@@ -50,11 +50,11 @@ function updateArchitect(options: Schema): Rule {
       builder: "@richapps/ngtron:build",
       options: {
         browserTarget: projectName + ":build",
-        electronMain: project.sourceRoot + "/electron.main.js",
+        electronMain: project.sourceRoot + "/electron.ts",
         electronPackage: {
           version: "0.0.0",
           name: projectName,
-          main: "electron.main.js",
+          main: "electron.js",
           dependencies: {}
         },
         packagerConfig: {
@@ -79,6 +79,8 @@ function updateArchitect(options: Schema): Rule {
 
 function addPackageJsonDependencies(): Rule {
   return (host: Tree, context: SchematicContext) => {
+
+    // TODO: Get latest electroin dependency or let user choose
     const dependencies: NodeDependency[] = [{ type: NodeDependencyType.Dev, version: "~4.0.0", name: "electron" }, { type: NodeDependencyType.Dev, version: "20.39.0", name: "electron-builder" }, { type: NodeDependencyType.Dev, version: "^8.10.46", name: "@types/node" }];
 
     dependencies.forEach(dependency => {
@@ -114,11 +116,11 @@ function addElectronMain(options: Schema): Rule {
     }
     const projectRootPath = project.root ? project.root : project.sourceRoot;
 
-    const electronMain = readFileSync(path.join(__dirname, "./files/electron.main.js"), {
+    const electronMain = readFileSync(path.join(__dirname, "./files/electron.ts"), {
       encoding: "utf-8"
     });
 
-    const mainPath = path.join(projectRootPath, "electron.main.js");
+    const mainPath = path.join(projectRootPath, "electron.ts");
     if (!tree.exists(mainPath)) {
       tree.create(mainPath, electronMain);
     }

@@ -33,18 +33,18 @@ function updateArchitect(options) {
             builder: "@richapps/ngtron:serve",
             options: {
                 browserTarget: projectName + ":serve",
-                electronMain: project.sourceRoot + "/electron.main.js"
+                electronMain: project.sourceRoot + "/electron.ts"
             }
         };
         architect["build-electron"] = {
             builder: "@richapps/ngtron:build",
             options: {
                 browserTarget: projectName + ":build",
-                electronMain: project.sourceRoot + "/electron.main.js",
+                electronMain: project.sourceRoot + "/electron.ts",
                 electronPackage: {
                     version: "0.0.0",
                     name: projectName,
-                    main: "electron.main.js",
+                    main: "electron.js",
                     dependencies: {}
                 },
                 packagerConfig: {
@@ -68,6 +68,7 @@ function updateArchitect(options) {
 }
 function addPackageJsonDependencies() {
     return (host, context) => {
+        // TODO: Get latest electroin dependency or let user choose
         const dependencies = [{ type: dependencies_1.NodeDependencyType.Dev, version: "~4.0.0", name: "electron" }, { type: dependencies_1.NodeDependencyType.Dev, version: "20.39.0", name: "electron-builder" }, { type: dependencies_1.NodeDependencyType.Dev, version: "^8.10.46", name: "@types/node" }];
         dependencies.forEach(dependency => {
             dependencies_1.addPackageJsonDependency(host, dependency);
@@ -97,10 +98,10 @@ function addElectronMain(options) {
             project.sourceRoot = path.join(project.root, "src");
         }
         const projectRootPath = project.root ? project.root : project.sourceRoot;
-        const electronMain = fs_1.readFileSync(path.join(__dirname, "./files/electron.main.js"), {
+        const electronMain = fs_1.readFileSync(path.join(__dirname, "./files/electron.ts"), {
             encoding: "utf-8"
         });
-        const mainPath = path.join(projectRootPath, "electron.main.js");
+        const mainPath = path.join(projectRootPath, "electron.ts");
         if (!tree.exists(mainPath)) {
             tree.create(mainPath, electronMain);
         }
