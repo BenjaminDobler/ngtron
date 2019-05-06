@@ -1,28 +1,30 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const path_1 = require("path");
-const rxjs_1 = require("rxjs");
 exports.BUILD_IN_NODE_MODULES = ["fs", "path"];
 exports.BUILD_IN_ELECTRON_MODULES = ["electron", "app", "shell"];
 function isMac() {
     return /^darwin/.test(process.platform);
 }
 exports.isMac = isMac;
-exports.noneElectronWebpackConfigTransformFactory = (options, buildElectronOptions, context) => ({ root }, browserWebpackConfig) => {
-    const externalDependencies = buildElectronOptions.electronPackage.dependencies;
-    let EXTERNALS = Object.keys(externalDependencies);
-    EXTERNALS = [...EXTERNALS, ...exports.BUILD_IN_ELECTRON_MODULES, ...exports.BUILD_IN_NODE_MODULES];
-    browserWebpackConfig.externals = [
-        (function () {
-            return function (context, request, callback) {
-                if (EXTERNALS.indexOf(request) >= 0) {
-                    return callback(null, "'undefined'");
-                }
-                return callback();
-            };
-        })()
-    ];
-    return rxjs_1.of(browserWebpackConfig);
+exports.noneElectronWebpackConfigTransformFactory = (options, buildElectronOptions, context) => {
+    console.log("Electron Browser Serve Webpack");
+    return webpackConfig => {
+        const externalDependencies = buildElectronOptions.electronPackage.dependencies;
+        let EXTERNALS = Object.keys(externalDependencies);
+        EXTERNALS = [...EXTERNALS, ...exports.BUILD_IN_ELECTRON_MODULES, ...exports.BUILD_IN_NODE_MODULES];
+        webpackConfig.externals = [
+            (function () {
+                return function (context, request, callback) {
+                    if (EXTERNALS.indexOf(request) >= 0) {
+                        return callback(null, "'undefined'");
+                    }
+                    return callback();
+                };
+            })()
+        ];
+        return webpackConfig;
+    };
 };
 exports.electronServeWebpackConfigTransformFactory = (options, buildElectronOptions, context) => {
     console.log("Electron Serve Webpack");
@@ -50,6 +52,7 @@ exports.electronServeWebpackConfigTransformFactory = (options, buildElectronOpti
         return webpackConfig;
     };
 };
+// Package
 exports.electronBuildWebpackConfigTransformFactory = (options, buildElectronOptions, context) => {
     return webpackConfig => {
         const externalDependencies = buildElectronOptions.electronPackage.dependencies;

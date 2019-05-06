@@ -16,6 +16,14 @@
     "electronMain": {
       "type": "string",
       "description": "The port to use to serve the application."
+    },
+    "packagerConfig": {
+      "type": "object",
+      "description": "Electron packager options"
+    },
+    "electronPackage": {
+      "type": "object",
+      "description": "Electron packager options"
     }
   },
   "additionalProperties": false,

@@ -1,12 +1,18 @@
-import { createBuilder, targetFromTargetString, BuilderContext, BuilderOutput } from "@angular-devkit/architect";
-import { DevServerBuilderOutput, executeDevServerBuilder, DevServerBuilderOptions } from "@angular-devkit/build-angular";
-import { Observable, of, from, pipe } from "rxjs";
-import { switchMap, mapTo, filter, tap } from "rxjs/operators";
-import { buildElectron } from "../electron/electron";
-import { electronBuildWebpackConfigTransformFactory } from "../util/util";
-import { buildWebpackBrowser } from "@angular-devkit/build-angular/src/browser";
-import { copyFileSync, writeFileSync } from "fs";
-import { join, basename } from "path";
+import {createBuilder, targetFromTargetString, BuilderContext, BuilderOutput} from "@angular-devkit/architect";
+import {DevServerBuilderOutput, executeDevServerBuilder, DevServerBuilderOptions} from "@angular-devkit/build-angular";
+import {Observable, of, from, pipe} from "rxjs";
+import {switchMap, mapTo, filter, tap} from "rxjs/operators";
+import {openElectron, reloadElectron} from "../util/electron";
+import {
+  noneElectronWebpackConfigTransformFactory,
+  electronServeWebpackConfigTransformFactory,
+  electronBuildWebpackConfigTransformFactory, compile
+} from "../util/util";
+import {buildWebpackBrowser} from "@angular-devkit/build-angular/src/browser";
+import * as ts from "typescript";
+import {basename, join} from "path";
+import {copyFileSync, writeFileSync} from "fs";
+
 
 export const execute = (options: DevServerBuilderOptions, context: BuilderContext): Observable<BuilderOutput> => {
   let serverOptions;
@@ -21,8 +27,17 @@ export const execute = (options: DevServerBuilderOptions, context: BuilderContex
     });
     buildOptions.browserTarget = context.target.project + ":build";
     buildOptions.port = options.port ? options.port : 4200;
-    buildOptions.watch = false;
+    buildOptions.watch = true;
     buildOptions.baseHref = "./";
+
+    compile([options.electronMain as string], {
+      noEmitOnError: true,
+      noImplicitAny: true,
+      target: ts.ScriptTarget.ES2015,
+      module: ts.ModuleKind.CommonJS,
+      outDir: buildOptions.outputPath as string
+    });
+
 
     const electronBuildTarget = targetFromTargetString(context.target.project + ":build-electron");
 
@@ -34,13 +49,18 @@ export const execute = (options: DevServerBuilderOptions, context: BuilderContex
     };
   }
 
+
+  let count = -1;
+
   return from(setup()).pipe(
     switchMap(opt => {
+      // const webpackTransformFactory = context.target.target === "build-electron" ? electronServeWebpackConfigTransformFactory : noneElectronWebpackConfigTransformFactory;
+
       return buildWebpackBrowser(opt.buildOptions as any, context, {
         webpackConfiguration: electronBuildWebpackConfigTransformFactory(opt.buildOptions, opt.buildElectronOptions, context)
       });
     }),
-    filter((val, index) => index < 1),
+    //filter((val, index) => index < 1),
     tap(result => {
       // Copy electron main
       const fromMain = join(context.workspaceRoot, options.electronMain as string);
@@ -48,10 +68,17 @@ export const execute = (options: DevServerBuilderOptions, context: BuilderContex
       copyFileSync(fromMain, toMain);
 
       // write electron package to dist
-      writeFileSync(join(result.outputPath, "package.json"), JSON.stringify(options.electronPackage), { encoding: "utf-8" });
+      writeFileSync(join(result.outputPath, "package.json"), JSON.stringify(options.electronPackage), {encoding: "utf-8"});
     }),
-    switchMap((x: any) => buildElectron(options.packagerConfig)),
-    mapTo({ success: true })
+    switchMap((x: any) => {
+      count++;
+      if (count < 1) {
+        return openElectron(x, join(x.outputPath, "electron.js"), context)
+      } else {
+        return reloadElectron(x, context);
+      }
+    }),
+    mapTo({success: true})
   );
 };
 

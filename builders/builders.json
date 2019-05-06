@@ -1,14 +1,19 @@
 {
   "builders": {
-    "serve": {
-      "implementation": "./serve",
-      "schema": "./serve/schema.json",
-      "description": "serve electron"
-    },
     "build": {
       "implementation": "./build",
       "schema": "./build/schema.json",
-      "description": "build/package electron"
+      "description": "build and watch electron"
+    },
+    "package": {
+      "implementation": "./package",
+      "schema": "./package/schema.json",
+      "description": "package electron"
+    },
+    "serve": {
+      "implementation": "./serve",
+      "schema": "./serve/schema.json",
+      "description": "serve electron app in the browser"
     }
   }
 }

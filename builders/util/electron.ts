@@ -2,7 +2,7 @@ import { DevServerBuilderOutput } from "@angular-devkit/build-angular";
 import { BuilderContext, BuilderOutput } from "@angular-devkit/architect";
 import { Observable } from "rxjs";
 import { ChildProcess, spawn } from "child_process";
-import { isMac } from "../util/util";
+import { isMac } from "./util";
 const builder = require("electron-builder");
 
 export function openElectron(x: DevServerBuilderOutput, electronMain: string, context: BuilderContext): Observable<BuilderOutput> {
@@ -44,6 +44,7 @@ export function buildElectron(config): Observable<BuilderOutput> {
   return new Observable(observer => {
     builder.build(config).then(
       () => {
+        console.log("Build Done");
         observer.next();
       },
       e => {

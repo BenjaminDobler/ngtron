@@ -29,17 +29,17 @@ function updateArchitect(options) {
         const architect = workspace.projects[projectName].architect;
         if (!architect)
             throw new Error(`expected node projects/${projectName}/architect in angular.json`);
-        architect["serve-electron"] = {
-            builder: "@richapps/ngtron:serve",
-            options: {
-                browserTarget: projectName + ":serve",
-                electronMain: project.sourceRoot + "/electron.ts"
-            }
-        };
         architect["build-electron"] = {
             builder: "@richapps/ngtron:build",
             options: {
                 browserTarget: projectName + ":build",
+                electronMain: project.sourceRoot + "/electron.ts"
+            }
+        };
+        architect["package-electron"] = {
+            builder: "@richapps/ngtron:package",
+            options: {
+                browserTarget: projectName + ":package",
                 electronMain: project.sourceRoot + "/electron.ts",
                 electronPackage: {
                     version: "0.0.0",

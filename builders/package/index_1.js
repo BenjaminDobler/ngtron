@@ -45,7 +45,7 @@ function execute(options, context) {
             project: browserTarget.project,
             target: "build"
         });
-        console.log("build options ", buildOptions);
+        console.log("package options ", buildOptions);
         const overrides = {
             watch: false,
             baseHref: "./"

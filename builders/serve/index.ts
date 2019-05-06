@@ -2,7 +2,7 @@ import {createBuilder, targetFromTargetString, BuilderContext, BuilderOutput} fr
 import {DevServerBuilderOutput, executeDevServerBuilder, DevServerBuilderOptions} from "@angular-devkit/build-angular";
 import {Observable, of, from, pipe} from "rxjs";
 import {switchMap, mapTo, filter, tap} from "rxjs/operators";
-import {openElectron, reloadElectron} from "../electron/electron";
+import {openElectron, reloadElectron} from "../util/electron";
 import {
   noneElectronWebpackConfigTransformFactory,
   electronServeWebpackConfigTransformFactory,
@@ -25,7 +25,7 @@ export const execute = (options: DevServerBuilderOptions, context: BuilderContex
       project: context.target.project,
       target: "build"
     });
-    buildOptions.browserTarget = context.target.project + ":build";
+    buildOptions.browserTarget = context.target.project + ":package";
     buildOptions.port = options.port ? options.port : 4200;
     buildOptions.watch = true;
     buildOptions.baseHref = "./";
@@ -39,7 +39,7 @@ export const execute = (options: DevServerBuilderOptions, context: BuilderContex
     });
 
 
-    const electronBuildTarget = targetFromTargetString(context.target.project + ":build-electron");
+    const electronBuildTarget = targetFromTargetString(context.target.project + ":package-electron");
 
     buildElectronOptions = await context.getTargetOptions(electronBuildTarget);
 
@@ -50,33 +50,12 @@ export const execute = (options: DevServerBuilderOptions, context: BuilderContex
   }
 
 
-  let count = -1;
-
   return from(setup()).pipe(
     switchMap(opt => {
-      // const webpackTransformFactory = context.target.target === "serve-electron" ? electronServeWebpackConfigTransformFactory : noneElectronWebpackConfigTransformFactory;
 
       return buildWebpackBrowser(opt.buildOptions as any, context, {
-        webpackConfiguration: electronBuildWebpackConfigTransformFactory(opt.buildOptions, opt.buildElectronOptions, context)
+        webpackConfiguration: noneElectronWebpackConfigTransformFactory(opt.buildOptions, opt.buildElectronOptions, context)
       });
-    }),
-    //filter((val, index) => index < 1),
-    tap(result => {
-      // Copy electron main
-      const fromMain = join(context.workspaceRoot, options.electronMain as string);
-      const toMain = join(result.outputPath, basename(options.electronMain as string));
-      copyFileSync(fromMain, toMain);
-
-      // write electron package to dist
-      writeFileSync(join(result.outputPath, "package.json"), JSON.stringify(options.electronPackage), {encoding: "utf-8"});
-    }),
-    switchMap((x: any) => {
-      count++;
-      if (count < 1) {
-        return openElectron(x, join(x.outputPath, "electron.js"), context)
-      } else {
-        return reloadElectron(x, context);
-      }
     }),
     mapTo({success: true})
   );

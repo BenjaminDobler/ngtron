@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const rxjs_1 = require("rxjs");
 const child_process_1 = require("child_process");
-const util_1 = require("../util/util");
+const util_1 = require("./util");
 const builder = require("electron-builder");
 function openElectron(x, electronMain, context) {
     return new rxjs_1.Observable(observer => {
@@ -37,6 +37,7 @@ exports.reloadElectron = reloadElectron;
 function buildElectron(config) {
     return new rxjs_1.Observable(observer => {
         builder.build(config).then(() => {
+            console.log("Build Done");
             observer.next();
         }, e => {
             console.log("Error ", e);

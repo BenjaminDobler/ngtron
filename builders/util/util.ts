@@ -9,23 +9,27 @@ export function isMac() {
   return /^darwin/.test(process.platform);
 }
 
-export const noneElectronWebpackConfigTransformFactory = (options: any, buildElectronOptions: any, context: BuilderContext) => ({root}, browserWebpackConfig) => {
-  const externalDependencies = buildElectronOptions.electronPackage.dependencies;
-  let EXTERNALS = Object.keys(externalDependencies);
-  EXTERNALS = [...EXTERNALS, ...BUILD_IN_ELECTRON_MODULES, ...BUILD_IN_NODE_MODULES];
-  browserWebpackConfig.externals = [
-    (function () {
-      return function (context, request, callback) {
-        if (EXTERNALS.indexOf(request) >= 0) {
-          return callback(null, "'undefined'");
-        }
-        return callback();
-      };
-    })()
-  ];
 
-  return of(browserWebpackConfig);
+export const noneElectronWebpackConfigTransformFactory: any = (options: any, buildElectronOptions: any, context: BuilderContext) => {
+  console.log("Electron Browser Serve Webpack");
+  return webpackConfig => {
+    const externalDependencies = buildElectronOptions.electronPackage.dependencies;
+    let EXTERNALS = Object.keys(externalDependencies);
+    EXTERNALS = [...EXTERNALS, ...BUILD_IN_ELECTRON_MODULES, ...BUILD_IN_NODE_MODULES];
+    webpackConfig.externals = [
+      (function () {
+        return function (context, request, callback) {
+          if (EXTERNALS.indexOf(request) >= 0) {
+            return callback(null, "'undefined'");
+          }
+          return callback();
+        };
+      })()
+    ];
+    return webpackConfig;
+  };
 };
+
 
 export const electronServeWebpackConfigTransformFactory: any = (options: any, buildElectronOptions: any, context: BuilderContext) => {
   console.log("Electron Serve Webpack");
@@ -56,6 +60,8 @@ export const electronServeWebpackConfigTransformFactory: any = (options: any, bu
   };
 };
 
+
+// Package
 export const electronBuildWebpackConfigTransformFactory: any = (options: any, buildElectronOptions: any, context: BuilderContext) => {
   return webpackConfig => {
     const externalDependencies = buildElectronOptions.electronPackage.dependencies;

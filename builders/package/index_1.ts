@@ -43,7 +43,7 @@ async function execute(options: any, context: BuilderContext) {
     project: browserTarget.project,
     target: "build"
   });
-  console.log("build options ", buildOptions);
+  console.log("package options ", buildOptions);
 
   const overrides: Record<string, string | number | boolean> = {
     watch: false,
