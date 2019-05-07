@@ -12,6 +12,7 @@ import {buildWebpackBrowser} from "@angular-devkit/build-angular/src/browser";
 import * as ts from "typescript";
 import {basename, join} from "path";
 import {copyFileSync, writeFileSync} from "fs";
+import {build} from "electron-builder";
 
 
 export const execute = (options: DevServerBuilderOptions, context: BuilderContext): Observable<BuilderOutput> => {
@@ -38,10 +39,23 @@ export const execute = (options: DevServerBuilderOptions, context: BuilderContex
       outDir: buildOptions.outputPath as string
     });
 
+    const outputPath = buildOptions.outputPath as string;
 
-    const electronBuildTarget = targetFromTargetString(context.target.project + ":build-electron");
 
+
+    const electronBuildTarget = targetFromTargetString(context.target.project + ":package-electron");
     buildElectronOptions = await context.getTargetOptions(electronBuildTarget);
+
+    console.log("Output path ", buildOptions.outputPath);
+    console.log("buildElectronOptions ", buildElectronOptions.electronPackage);
+
+    const fromMain = join(context.workspaceRoot, options.electronMain as string);
+    const toMain = join(outputPath, basename(options.electronMain as string));
+    copyFileSync(fromMain, toMain);
+
+    // write electron package to dist
+    writeFileSync(join(outputPath, "package.json"), JSON.stringify(buildElectronOptions.electronPackage), {encoding: "utf-8"});
+
 
     return {
       buildOptions: buildOptions,
@@ -59,16 +73,6 @@ export const execute = (options: DevServerBuilderOptions, context: BuilderContex
       return buildWebpackBrowser(opt.buildOptions as any, context, {
         webpackConfiguration: electronBuildWebpackConfigTransformFactory(opt.buildOptions, opt.buildElectronOptions, context)
       });
-    }),
-    //filter((val, index) => index < 1),
-    tap(result => {
-      // Copy electron main
-      const fromMain = join(context.workspaceRoot, options.electronMain as string);
-      const toMain = join(result.outputPath, basename(options.electronMain as string));
-      copyFileSync(fromMain, toMain);
-
-      // write electron package to dist
-      writeFileSync(join(result.outputPath, "package.json"), JSON.stringify(options.electronPackage), {encoding: "utf-8"});
     }),
     switchMap((x: any) => {
       count++;

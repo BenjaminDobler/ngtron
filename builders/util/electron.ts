@@ -9,7 +9,7 @@ export function openElectron(x: DevServerBuilderOutput, electronMain: string, co
   return new Observable(observer => {
     console.log("Open Electron ", electronMain);
 
-    if (context.target.target === "serve-electron") {
+    if (context.target.target === "build-electron") {
       const electronBin = isMac() ? "./node_modules/.bin/electron" : "node_modules/electron/dist/electron";
 
       const ls: ChildProcess = spawn(electronBin, [electronMain]);

@@ -39,8 +39,16 @@ exports.execute = (options, context) => {
                 module: ts.ModuleKind.CommonJS,
                 outDir: buildOptions.outputPath
             });
-            const electronBuildTarget = architect_1.targetFromTargetString(context.target.project + ":build-electron");
+            const outputPath = buildOptions.outputPath;
+            const electronBuildTarget = architect_1.targetFromTargetString(context.target.project + ":package-electron");
             buildElectronOptions = yield context.getTargetOptions(electronBuildTarget);
+            console.log("Output path ", buildOptions.outputPath);
+            console.log("buildElectronOptions ", buildElectronOptions.electronPackage);
+            const fromMain = path_1.join(context.workspaceRoot, options.electronMain);
+            const toMain = path_1.join(outputPath, path_1.basename(options.electronMain));
+            fs_1.copyFileSync(fromMain, toMain);
+            // write electron package to dist
+            fs_1.writeFileSync(path_1.join(outputPath, "package.json"), JSON.stringify(buildElectronOptions.electronPackage), { encoding: "utf-8" });
             return {
                 buildOptions: buildOptions,
                 buildElectronOptions: buildElectronOptions
@@ -53,15 +61,6 @@ exports.execute = (options, context) => {
         return browser_1.buildWebpackBrowser(opt.buildOptions, context, {
             webpackConfiguration: util_1.electronBuildWebpackConfigTransformFactory(opt.buildOptions, opt.buildElectronOptions, context)
         });
-    }), 
-    //filter((val, index) => index < 1),
-    operators_1.tap(result => {
-        // Copy electron main
-        const fromMain = path_1.join(context.workspaceRoot, options.electronMain);
-        const toMain = path_1.join(result.outputPath, path_1.basename(options.electronMain));
-        fs_1.copyFileSync(fromMain, toMain);
-        // write electron package to dist
-        fs_1.writeFileSync(path_1.join(result.outputPath, "package.json"), JSON.stringify(options.electronPackage), { encoding: "utf-8" });
     }), operators_1.switchMap((x) => {
         count++;
         if (count < 1) {

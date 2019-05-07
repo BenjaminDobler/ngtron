@@ -27,7 +27,7 @@ exports.execute = (options, context) => {
                 project: context.target.project,
                 target: "build"
             });
-            buildOptions.browserTarget = context.target.project + ":package";
+            buildOptions.browserTarget = context.target.project + ":package-electron";
             buildOptions.port = options.port ? options.port : 4200;
             buildOptions.watch = false;
             buildOptions.baseHref = "./";

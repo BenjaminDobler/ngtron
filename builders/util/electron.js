@@ -7,7 +7,7 @@ const builder = require("electron-builder");
 function openElectron(x, electronMain, context) {
     return new rxjs_1.Observable(observer => {
         console.log("Open Electron ", electronMain);
-        if (context.target.target === "serve-electron") {
+        if (context.target.target === "build-electron") {
             const electronBin = util_1.isMac() ? "./node_modules/.bin/electron" : "node_modules/electron/dist/electron";
             const ls = child_process_1.spawn(electronBin, [electronMain]);
             ls.stdout.on("data", function (data) {
