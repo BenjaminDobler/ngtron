@@ -23,6 +23,7 @@ exports.noneElectronWebpackConfigTransformFactory = (options, buildElectronOptio
                 };
             })()
         ];
+        webpackConfig.optimization.splitChunks = false; // What the F!
         return webpackConfig;
     };
 };

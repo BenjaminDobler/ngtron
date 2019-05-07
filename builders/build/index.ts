@@ -46,9 +46,6 @@ export const execute = (options: DevServerBuilderOptions, context: BuilderContex
     const electronBuildTarget = targetFromTargetString(context.target.project + ":package-electron");
     buildElectronOptions = await context.getTargetOptions(electronBuildTarget);
 
-    console.log("Output path ", buildOptions.outputPath);
-    console.log("buildElectronOptions ", buildElectronOptions.electronPackage);
-
     const fromMain = join(context.workspaceRoot, options.electronMain as string);
     const toMain = join(outputPath, basename(options.electronMain as string));
     copyFileSync(fromMain, toMain);

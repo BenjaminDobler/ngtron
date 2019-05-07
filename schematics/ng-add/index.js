@@ -39,7 +39,7 @@ function updateArchitect(options) {
         architect["package-electron"] = {
             builder: "@richapps/ngtron:package",
             options: {
-                browserTarget: projectName + ":package",
+                browserTarget: projectName + ":build",
                 electronMain: project.sourceRoot + "/electron.ts",
                 electronPackage: {
                     version: "0.0.0",

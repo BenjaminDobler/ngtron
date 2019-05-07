@@ -26,6 +26,7 @@ export const noneElectronWebpackConfigTransformFactory: any = (options: any, bui
         };
       })()
     ];
+    webpackConfig.optimization.splitChunks = false; // What the F!
     return webpackConfig;
   };
 };

@@ -13,10 +13,10 @@ const rxjs_1 = require("rxjs");
 const operators_1 = require("rxjs/operators");
 const util_1 = require("../util/util");
 const browser_1 = require("@angular-devkit/build-angular/src/browser");
-const ts = require("typescript");
 exports.execute = (options, context) => {
     let serverOptions;
     let buildElectronOptions;
+    console.log("Electron serve");
     function setup() {
         return __awaiter(this, void 0, void 0, function* () {
             const browserTarget = architect_1.targetFromTargetString(options.browserTarget);
@@ -25,17 +25,9 @@ exports.execute = (options, context) => {
                 project: context.target.project,
                 target: "build"
             });
-            buildOptions.browserTarget = context.target.project + ":package";
+            buildOptions.browserTarget = context.target.project + ":build";
             buildOptions.port = options.port ? options.port : 4200;
             buildOptions.watch = true;
-            buildOptions.baseHref = "./";
-            util_1.compile([options.electronMain], {
-                noEmitOnError: true,
-                noImplicitAny: true,
-                target: ts.ScriptTarget.ES2015,
-                module: ts.ModuleKind.CommonJS,
-                outDir: buildOptions.outputPath
-            });
             const electronBuildTarget = architect_1.targetFromTargetString(context.target.project + ":package-electron");
             buildElectronOptions = yield context.getTargetOptions(electronBuildTarget);
             return {
@@ -45,10 +37,11 @@ exports.execute = (options, context) => {
         });
     }
     return rxjs_1.from(setup()).pipe(operators_1.switchMap(opt => {
+        console.log(opt.buildOptions);
         return browser_1.buildWebpackBrowser(opt.buildOptions, context, {
             webpackConfiguration: util_1.noneElectronWebpackConfigTransformFactory(opt.buildOptions, opt.buildElectronOptions, context)
         });
-    }), operators_1.mapTo({ success: true }));
+    }), operators_1.tap(x => console.log(x)), operators_1.mapTo({ success: true }));
 };
 exports.default = architect_1.createBuilder(exports.execute);
 //# sourceMappingURL=index.js.map

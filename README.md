@@ -14,7 +14,6 @@ This project uses the new architect API which is currently in Beta and will ship
 ### Run app while developing (with hot reloading)
 `ng run project:build-electron`
 
-
 ### Package your app
 `ng run project:package-electron`
 

@@ -17,6 +17,7 @@ import {copyFileSync, writeFileSync} from "fs";
 export const execute = (options: DevServerBuilderOptions, context: BuilderContext): Observable<BuilderOutput> => {
   let serverOptions;
   let buildElectronOptions;
+  console.log("Electron serve");
 
   async function setup() {
     const browserTarget = targetFromTargetString(options.browserTarget);
@@ -25,19 +26,9 @@ export const execute = (options: DevServerBuilderOptions, context: BuilderContex
       project: context.target.project,
       target: "build"
     });
-    buildOptions.browserTarget = context.target.project + ":package";
+    buildOptions.browserTarget = context.target.project + ":build";
     buildOptions.port = options.port ? options.port : 4200;
     buildOptions.watch = true;
-    buildOptions.baseHref = "./";
-
-    compile([options.electronMain as string], {
-      noEmitOnError: true,
-      noImplicitAny: true,
-      target: ts.ScriptTarget.ES2015,
-      module: ts.ModuleKind.CommonJS,
-      outDir: buildOptions.outputPath as string
-    });
-
 
     const electronBuildTarget = targetFromTargetString(context.target.project + ":package-electron");
 
@@ -52,11 +43,12 @@ export const execute = (options: DevServerBuilderOptions, context: BuilderContex
 
   return from(setup()).pipe(
     switchMap(opt => {
-
+      console.log(opt.buildOptions);
       return buildWebpackBrowser(opt.buildOptions as any, context, {
         webpackConfiguration: noneElectronWebpackConfigTransformFactory(opt.buildOptions, opt.buildElectronOptions, context)
       });
     }),
+    tap(x=>console.log(x)),
     mapTo({success: true})
   );
 };

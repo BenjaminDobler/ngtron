@@ -42,8 +42,6 @@ exports.execute = (options, context) => {
             const outputPath = buildOptions.outputPath;
             const electronBuildTarget = architect_1.targetFromTargetString(context.target.project + ":package-electron");
             buildElectronOptions = yield context.getTargetOptions(electronBuildTarget);
-            console.log("Output path ", buildOptions.outputPath);
-            console.log("buildElectronOptions ", buildElectronOptions.electronPackage);
             const fromMain = path_1.join(context.workspaceRoot, options.electronMain);
             const toMain = path_1.join(outputPath, path_1.basename(options.electronMain));
             fs_1.copyFileSync(fromMain, toMain);
