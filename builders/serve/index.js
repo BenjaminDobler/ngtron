@@ -9,14 +9,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const architect_1 = require("@angular-devkit/architect");
+const build_angular_1 = require("@angular-devkit/build-angular");
 const rxjs_1 = require("rxjs");
 const operators_1 = require("rxjs/operators");
 const util_1 = require("../util/util");
-const browser_1 = require("@angular-devkit/build-angular/src/browser");
 exports.execute = (options, context) => {
     let serverOptions;
     let buildElectronOptions;
-    console.log("Electron serve");
     function setup() {
         return __awaiter(this, void 0, void 0, function* () {
             const browserTarget = architect_1.targetFromTargetString(options.browserTarget);
@@ -37,11 +36,11 @@ exports.execute = (options, context) => {
         });
     }
     return rxjs_1.from(setup()).pipe(operators_1.switchMap(opt => {
-        console.log(opt.buildOptions);
-        return browser_1.buildWebpackBrowser(opt.buildOptions, context, {
-            webpackConfiguration: util_1.noneElectronWebpackConfigTransformFactory(opt.buildOptions, opt.buildElectronOptions, context)
+        const webpackTransformFactory = util_1.noneElectronWebpackConfigTransformFactory;
+        return build_angular_1.executeDevServerBuilder(opt.buildOptions, context, {
+            webpackConfiguration: webpackTransformFactory(opt.buildOptions, opt.buildElectronOptions, context)
         });
-    }), operators_1.tap(x => console.log(x)), operators_1.mapTo({ success: true }));
+    }), operators_1.filter((val, index) => index < 1), operators_1.tap((x) => console.log(x)), operators_1.mapTo({ success: true }));
 };
 exports.default = architect_1.createBuilder(exports.execute);
 //# sourceMappingURL=index.js.map

@@ -63,6 +63,12 @@ function updateArchitect(options) {
                 }
             }
         };
+        architect["serve-electron"] = {
+            "builder": "@richapps/ngtron:serve",
+            "options": {
+                "browserTarget": projectName + ":build"
+            }
+        };
         return config_1.updateWorkspace(workspace);
     };
 }
