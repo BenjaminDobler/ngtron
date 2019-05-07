@@ -5,11 +5,7 @@ import {NodePackageInstallTask} from "@angular-devkit/schematics/tasks";
 import * as path from "path";
 import {getProject} from "@schematics/angular/utility/project";
 
-import {chain, Rule, SchematicContext, Tree, apply, url} from "@angular-devkit/schematics";
-import {ProjectType, WorkspaceProject, WorkspaceSchema} from "@schematics/angular/utility/workspace-models";
-import {Observable, of} from "rxjs";
-import {concatMap, map} from "rxjs/operators";
-import {template} from "@angular-devkit/core";
+import {chain, Rule, SchematicContext, Tree} from "@angular-devkit/schematics";
 import {readFileSync} from "fs";
 
 export default function (options: Schema): Rule {
@@ -21,13 +17,8 @@ export default function (options: Schema): Rule {
 function updateArchitect(options: Schema): Rule {
   return (tree: Tree, _context: SchematicContext) => {
     const workspace = getWorkspace(tree);
-
     const project = getProject(tree, options.project);
     const projectName = options.project;
-
-    console.log("Project name ", projectName);
-
-    // console.log(project);
 
     if (!project.sourceRoot && !project.root) {
       project.sourceRoot = "src";
@@ -74,12 +65,11 @@ function updateArchitect(options: Schema): Rule {
       }
     };
 
-
     architect["serve-electron"] = {
-        "builder": "@richapps/ngtron:serve",
-        "options": {
-          "browserTarget": projectName + ":build"
-        }
+      builder: "@richapps/ngtron:serve",
+      options: {
+        browserTarget: projectName + ":build"
+      }
     };
 
     return updateWorkspace(workspace);
@@ -116,11 +106,8 @@ function installPackageJsonDependencies(): Rule {
 
 function addElectronMain(options: Schema): Rule {
   return (tree: Tree, _context: SchematicContext) => {
-    // const project = options.project;
-    // const workspace = getWorkspace(tree);
 
     const project = getProject(tree, options.project);
-
     // compensate for lacking sourceRoot property
     // e. g. when project was migrated to ng7, sourceRoot is lacking
     if (!project.sourceRoot && !project.root) {

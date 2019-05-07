@@ -1,12 +1,12 @@
-import { createBuilder, targetFromTargetString, BuilderContext, BuilderOutput } from "@angular-devkit/architect";
-import { DevServerBuilderOutput, executeDevServerBuilder, DevServerBuilderOptions } from "@angular-devkit/build-angular";
-import { Observable, of, from, pipe } from "rxjs";
-import { switchMap, mapTo, filter, tap } from "rxjs/operators";
-import { buildElectron } from "../util/electron";
-import { electronBuildWebpackConfigTransformFactory } from "../util/util";
-import { buildWebpackBrowser } from "@angular-devkit/build-angular/src/browser";
-import { copyFileSync, writeFileSync } from "fs";
-import { join, basename } from "path";
+import {BuilderContext, BuilderOutput, createBuilder, targetFromTargetString} from "@angular-devkit/architect";
+import {DevServerBuilderOptions, DevServerBuilderOutput} from "@angular-devkit/build-angular";
+import {from, Observable} from "rxjs";
+import {filter, mapTo, switchMap, tap} from "rxjs/operators";
+import {buildElectron} from "../util/electron";
+import {electronBuildWebpackConfigTransformFactory} from "../util/util";
+import {buildWebpackBrowser} from "@angular-devkit/build-angular/src/browser";
+import {copyFileSync, writeFileSync} from "fs";
+import {basename, join} from "path";
 
 export const execute = (options: DevServerBuilderOptions, context: BuilderContext): Observable<BuilderOutput> => {
   let serverOptions;
@@ -51,7 +51,7 @@ export const execute = (options: DevServerBuilderOptions, context: BuilderContex
       writeFileSync(join(result.outputPath, "package.json"), JSON.stringify(options.electronPackage), { encoding: "utf-8" });
     }),
     switchMap((x: any) => buildElectron(options.packagerConfig)),
-    mapTo({ success: true })
+    mapTo({ success: true})
   );
 };
 

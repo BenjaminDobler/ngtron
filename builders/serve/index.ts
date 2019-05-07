@@ -1,8 +1,8 @@
-import { createBuilder, targetFromTargetString, BuilderContext, BuilderOutput } from "@angular-devkit/architect";
-import { DevServerBuilderOutput, executeDevServerBuilder, DevServerBuilderOptions } from "@angular-devkit/build-angular";
-import { Observable, of, from, pipe } from "rxjs";
-import { switchMap, mapTo, filter, tap } from "rxjs/operators";
-import { noneElectronWebpackConfigTransformFactory } from "../util/util";
+import {BuilderContext, BuilderOutput, createBuilder, targetFromTargetString} from "@angular-devkit/architect";
+import {DevServerBuilderOptions, DevServerBuilderOutput, executeDevServerBuilder} from "@angular-devkit/build-angular";
+import {from, Observable} from "rxjs";
+import {filter, mapTo, switchMap, tap} from "rxjs/operators";
+import {noneElectronWebpackConfigTransformFactory} from "../util/util";
 
 export const execute = (options: DevServerBuilderOptions, context: BuilderContext): Observable<BuilderOutput> => {
   let serverOptions;
@@ -39,7 +39,7 @@ export const execute = (options: DevServerBuilderOptions, context: BuilderContex
     }),
     filter((val, index) => index < 1),
     tap((x: DevServerBuilderOutput) => console.log(x)),
-    mapTo({ success: true })
+    mapTo({success: true})
   );
 };
 

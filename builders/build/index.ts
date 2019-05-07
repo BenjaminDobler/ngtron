@@ -1,13 +1,9 @@
-import {createBuilder, targetFromTargetString, BuilderContext, BuilderOutput} from "@angular-devkit/architect";
-import {DevServerBuilderOutput, executeDevServerBuilder, DevServerBuilderOptions} from "@angular-devkit/build-angular";
-import {Observable, of, from, pipe} from "rxjs";
-import {switchMap, mapTo, filter, tap} from "rxjs/operators";
+import {BuilderContext, BuilderOutput, createBuilder, targetFromTargetString} from "@angular-devkit/architect";
+import {DevServerBuilderOptions, DevServerBuilderOutput} from "@angular-devkit/build-angular";
+import {from, Observable} from "rxjs";
+import {mapTo, switchMap} from "rxjs/operators";
 import {openElectron, reloadElectron} from "../util/electron";
-import {
-  noneElectronWebpackConfigTransformFactory,
-  electronServeWebpackConfigTransformFactory,
-  electronBuildWebpackConfigTransformFactory, compile
-} from "../util/util";
+import {compile, electronBuildWebpackConfigTransformFactory} from "../util/util";
 import {buildWebpackBrowser} from "@angular-devkit/build-angular/src/browser";
 import * as ts from "typescript";
 import {basename, join} from "path";
@@ -42,7 +38,6 @@ export const execute = (options: DevServerBuilderOptions, context: BuilderContex
     const outputPath = buildOptions.outputPath as string;
 
 
-
     const electronBuildTarget = targetFromTargetString(context.target.project + ":package-electron");
     buildElectronOptions = await context.getTargetOptions(electronBuildTarget);
 
@@ -65,8 +60,6 @@ export const execute = (options: DevServerBuilderOptions, context: BuilderContex
 
   return from(setup()).pipe(
     switchMap(opt => {
-      // const webpackTransformFactory = context.target.target === "build-electron" ? electronServeWebpackConfigTransformFactory : noneElectronWebpackConfigTransformFactory;
-
       return buildWebpackBrowser(opt.buildOptions as any, context, {
         webpackConfiguration: electronBuildWebpackConfigTransformFactory(opt.buildOptions, opt.buildElectronOptions, context)
       });

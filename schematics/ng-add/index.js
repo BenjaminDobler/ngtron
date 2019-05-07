@@ -18,8 +18,6 @@ function updateArchitect(options) {
         const workspace = config_1.getWorkspace(tree);
         const project = project_1.getProject(tree, options.project);
         const projectName = options.project;
-        console.log("Project name ", projectName);
-        // console.log(project);
         if (!project.sourceRoot && !project.root) {
             project.sourceRoot = "src";
         }
@@ -64,9 +62,9 @@ function updateArchitect(options) {
             }
         };
         architect["serve-electron"] = {
-            "builder": "@richapps/ngtron:serve",
-            "options": {
-                "browserTarget": projectName + ":build"
+            builder: "@richapps/ngtron:serve",
+            options: {
+                browserTarget: projectName + ":build"
             }
         };
         return config_1.updateWorkspace(workspace);
@@ -97,8 +95,6 @@ function installPackageJsonDependencies() {
 }
 function addElectronMain(options) {
     return (tree, _context) => {
-        // const project = options.project;
-        // const workspace = getWorkspace(tree);
         const project = project_1.getProject(tree, options.project);
         // compensate for lacking sourceRoot property
         // e. g. when project was migrated to ng7, sourceRoot is lacking

@@ -55,7 +55,6 @@ exports.execute = (options, context) => {
     }
     let count = -1;
     return rxjs_1.from(setup()).pipe(operators_1.switchMap(opt => {
-        // const webpackTransformFactory = context.target.target === "build-electron" ? electronServeWebpackConfigTransformFactory : noneElectronWebpackConfigTransformFactory;
         return browser_1.buildWebpackBrowser(opt.buildOptions, context, {
             webpackConfiguration: util_1.electronBuildWebpackConfigTransformFactory(opt.buildOptions, opt.buildElectronOptions, context)
         });
