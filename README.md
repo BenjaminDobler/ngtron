@@ -2,6 +2,8 @@
 
 ![Alt text](ngtron.png?raw=true "NGTron Logo")
 
+Angular + Electron = :heart:
+
 Angular CLI extension based on Schematics and Builders for building angular based electron applications.
 This project uses the new architect API which is currently in Beta and will ship with angular 8.
 **So you can only use this addon starting with angular 8!**
