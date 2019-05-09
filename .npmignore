@@ -1,3 +1,4 @@
 # Ignores TypeScript files, but keeps definitions.
 *.ts
+!schematics/ng-add/files/electron.ts
 !*.d.ts
