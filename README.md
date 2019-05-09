@@ -21,13 +21,17 @@ ng add @richapps/ngtron
 ```bash
 ng run project:build-electron
 ```
-
+Builds the app and opens it in an electron window. Uses hot reloading whenever your code changes.
 ### Package your app
 ```bash
 ng run project:package-electron
 ```
+You can customize your build settings in the angular.json.
+There you will find all the settings which you can use in electron-builder.
 
 ### Serve app in the browser
 `ng run project:serve-electron`
+This will serve your app in the browser even if you use node or electron apis. 
+Example will follow.
 
 
