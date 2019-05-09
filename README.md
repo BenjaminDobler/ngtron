@@ -10,16 +10,22 @@ Ngtron will setup your angular workspace with the finest electron tools availabl
 [Electron Reload](https://www.npmjs.com/package/electron-reload) is used to automatically reload your app while developing whenever you make code changes.
 
 
-# Installation
-`ng add @richapps/ngtron`
+## Installation
+```bash
+ng add @richapps/ngtron
+```
 
-# Usage
+## Usage
 
 ### Run app while developing (with hot reloading)
-`ng run project:build-electron`
+```bash
+ng run project:build-electron
+```
 
 ### Package your app
-`ng run project:package-electron`
+```bash
+ng run project:package-electron
+```
 
 ### Serve app in the browser
 `ng run project:serve-electron`
