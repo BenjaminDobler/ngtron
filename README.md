@@ -12,6 +12,7 @@ Ngtron will setup your angular workspace with the finest electron tools availabl
 [Electron Reload](https://www.npmjs.com/package/electron-reload) is used to automatically reload your app while developing whenever you make code changes.
 
 
+[![npm version](https://badge.fury.io/js/%40richapps%2Fngtron.svg)](https://www.npmjs.com/@richapps/ngtron)
 ## Installation
 ```bash
 ng add @richapps/ngtron
