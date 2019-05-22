@@ -20,5 +20,5 @@
     "types": ["jasmine", "node"]
   },
   "include": ["builders/**/*", "schematics/**/*"],
-  "exclude": ["src/*/files/**/*"]
+  "exclude": ["schematics/*/files/**/*"]
 }
