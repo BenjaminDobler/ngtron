@@ -1,14 +1,14 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const path_1 = require("path");
-exports.BUILD_IN_NODE_MODULES = ["fs", "path"];
-exports.BUILD_IN_ELECTRON_MODULES = ["electron", "app", "shell"];
+exports.BUILD_IN_NODE_MODULES = ["fs", "path"]; // TODO: add all build in node modules
+exports.BUILD_IN_ELECTRON_MODULES = ["electron", "app", "shell"]; // TODO: add all build in electron modules
 function isMac() {
     return /^darwin/.test(process.platform);
 }
 exports.isMac = isMac;
 exports.noneElectronWebpackConfigTransformFactory = (options, buildElectronOptions, context) => {
-    console.log("Electron Browser Serve Webpack");
+    context.logger.info("Electron Browser Serve Webpack");
     return webpackConfig => {
         const externalDependencies = buildElectronOptions.electronPackage.dependencies;
         let EXTERNALS = Object.keys(externalDependencies);
@@ -28,7 +28,7 @@ exports.noneElectronWebpackConfigTransformFactory = (options, buildElectronOptio
     };
 };
 exports.electronServeWebpackConfigTransformFactory = (options, buildElectronOptions, context) => {
-    console.log("Electron Serve Webpack");
+    context.logger.info("Electron Serve Webpack");
     return webpackConfig => {
         const externalDependencies = buildElectronOptions.electronPackage.dependencies;
         const rootNodeModules = path_1.join(context.workspaceRoot, "node_modules");
@@ -92,8 +92,6 @@ function compile(fileNames, options) {
         }
     });
     let exitCode = emitResult.emitSkipped ? 1 : 0;
-    console.log(`Process exiting with code '${exitCode}'.`);
-    //process.exit(exitCode);
 }
 exports.compile = compile;
 //# sourceMappingURL=util.js.map

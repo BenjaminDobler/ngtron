@@ -1,9 +1,8 @@
 import {join} from "path";
 import {BuilderContext} from "@angular-devkit/architect";
-import {of} from "rxjs";
 
-export const BUILD_IN_NODE_MODULES = ["fs", "path"];
-export const BUILD_IN_ELECTRON_MODULES = ["electron", "app", "shell"];
+export const BUILD_IN_NODE_MODULES = ["fs", "path"]; // TODO: add all build in node modules
+export const BUILD_IN_ELECTRON_MODULES = ["electron", "app", "shell"]; // TODO: add all build in electron modules
 
 export function isMac() {
   return /^darwin/.test(process.platform);
@@ -11,7 +10,7 @@ export function isMac() {
 
 
 export const noneElectronWebpackConfigTransformFactory: any = (options: any, buildElectronOptions: any, context: BuilderContext) => {
-  console.log("Electron Browser Serve Webpack");
+  context.logger.info("Electron Browser Serve Webpack");
   return webpackConfig => {
     const externalDependencies = buildElectronOptions.electronPackage.dependencies;
     let EXTERNALS = Object.keys(externalDependencies);
@@ -33,7 +32,7 @@ export const noneElectronWebpackConfigTransformFactory: any = (options: any, bui
 
 
 export const electronServeWebpackConfigTransformFactory: any = (options: any, buildElectronOptions: any, context: BuilderContext) => {
-  console.log("Electron Serve Webpack");
+  context.logger.info("Electron Serve Webpack");
   return webpackConfig => {
     const externalDependencies = buildElectronOptions.electronPackage.dependencies;
     const rootNodeModules = join(context.workspaceRoot, "node_modules");
@@ -118,6 +117,4 @@ export function compile(fileNames: string[], options: ts.CompilerOptions): void 
   });
 
   let exitCode = emitResult.emitSkipped ? 1 : 0;
-  console.log(`Process exiting with code '${exitCode}'.`);
-  //process.exit(exitCode);
 }

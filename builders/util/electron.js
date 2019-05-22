@@ -29,7 +29,7 @@ function openElectron(x, electronMain, context) {
 exports.openElectron = openElectron;
 function reloadElectron(x, context) {
     return new rxjs_1.Observable(observer => {
-        console.log("Reload Electron ");
+        context.logger.info("Reload Electron");
         observer.next({ success: true });
     });
 }

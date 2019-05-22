@@ -34,7 +34,7 @@ export function openElectron(x: DevServerBuilderOutput, electronMain: string, co
 
 export function reloadElectron(x: DevServerBuilderOutput, context: BuilderContext): Observable<BuilderOutput> {
   return new Observable(observer => {
-    console.log("Reload Electron ");
+    context.logger.info("Reload Electron");
     observer.next({success: true});
 
   });
