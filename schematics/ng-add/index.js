@@ -104,11 +104,10 @@ function addElectronMain(options) {
         else if (!project.sourceRoot) {
             project.sourceRoot = path.join(project.root, "src");
         }
-        const projectRootPath = project.root ? project.root : project.sourceRoot;
         const electronMain = fs_1.readFileSync(path.join(__dirname, "./files/electron.ts"), {
             encoding: "utf-8"
         });
-        const mainPath = path.join(projectRootPath, "electron.ts");
+        const mainPath = path.join(project.sourceRoot, "electron.ts");
         if (!tree.exists(mainPath)) {
             tree.create(mainPath, electronMain);
         }
