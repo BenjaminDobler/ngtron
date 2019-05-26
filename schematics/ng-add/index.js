@@ -6,10 +6,14 @@ const tasks_1 = require("@angular-devkit/schematics/tasks");
 const path = require("path");
 const project_1 = require("@schematics/angular/utility/project");
 const schematics_1 = require("@angular-devkit/schematics");
-const fs_1 = require("fs");
 function default_1(options) {
     return (tree, _context) => {
-        return schematics_1.chain([updateArchitect(options), addElectronMain(options), addPackageJsonDependencies(), installPackageJsonDependencies()])(tree, _context);
+        return schematics_1.chain([
+            updateArchitect(options),
+            addFiles(options),
+            addPackageJsonDependencies(),
+            installPackageJsonDependencies()
+        ])(tree, _context);
     };
 }
 exports.default = default_1;
@@ -93,25 +97,15 @@ function installPackageJsonDependencies() {
         return host;
     };
 }
-function addElectronMain(options) {
-    return (tree, _context) => {
-        const project = project_1.getProject(tree, options.project);
-        // compensate for lacking sourceRoot property
-        // e. g. when project was migrated to ng7, sourceRoot is lacking
-        if (!project.sourceRoot && !project.root) {
-            project.sourceRoot = "src";
-        }
-        else if (!project.sourceRoot) {
-            project.sourceRoot = path.join(project.root, "src");
-        }
-        const electronMain = fs_1.readFileSync(path.join(__dirname, "./files/electron.ts"), {
-            encoding: "utf-8"
-        });
-        const mainPath = path.join(project.sourceRoot, "electron.ts");
-        if (!tree.exists(mainPath)) {
-            tree.create(mainPath, electronMain);
-        }
-        return tree;
+function addFiles(options) {
+    return (host, context) => {
+        const project = project_1.getProject(host, options.project);
+        return schematics_1.mergeWith(schematics_1.apply(schematics_1.url(`./files`), [
+            schematics_1.template({
+                tmpl: ''
+            }),
+            schematics_1.move(project.root)
+        ]));
     };
 }
 //# sourceMappingURL=index.js.map

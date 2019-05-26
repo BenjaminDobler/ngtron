@@ -5,12 +5,16 @@ import {NodePackageInstallTask} from "@angular-devkit/schematics/tasks";
 import * as path from "path";
 import {getProject} from "@schematics/angular/utility/project";
 
-import {chain, Rule, SchematicContext, Tree} from "@angular-devkit/schematics";
-import {readFileSync} from "fs";
+import {apply, chain, mergeWith, move, Rule, SchematicContext, template, Tree, url} from "@angular-devkit/schematics";
 
 export default function (options: Schema): Rule {
   return (tree: Tree, _context: SchematicContext) => {
-    return chain([updateArchitect(options), addElectronMain(options), addPackageJsonDependencies(), installPackageJsonDependencies()])(tree, _context);
+    return chain([
+      updateArchitect(options),
+      addFiles(options),
+      addPackageJsonDependencies(),
+      installPackageJsonDependencies()
+    ])(tree, _context);
   };
 }
 
@@ -104,27 +108,15 @@ function installPackageJsonDependencies(): Rule {
   };
 }
 
-function addElectronMain(options: Schema): Rule {
-  return (tree: Tree, _context: SchematicContext) => {
-
-    const project = getProject(tree, options.project);
-    // compensate for lacking sourceRoot property
-    // e. g. when project was migrated to ng7, sourceRoot is lacking
-    if (!project.sourceRoot && !project.root) {
-      project.sourceRoot = "src";
-    } else if (!project.sourceRoot) {
-      project.sourceRoot = path.join(project.root, "src");
-    }
-
-    const electronMain = readFileSync(path.join(__dirname, "./files/electron.ts"), {
-      encoding: "utf-8"
-    });
-
-    const mainPath = path.join(project.sourceRoot, "electron.ts");
-    if (!tree.exists(mainPath)) {
-      tree.create(mainPath, electronMain);
-    }
-
-    return tree;
-  };
+function addFiles(options) {
+  return (host: Tree, context: SchematicContext) => {
+    const project = getProject(host, options.project);
+    return mergeWith(
+      apply(url(`./files`), [
+        template({
+          tmpl: ''
+        }),
+        move(project.root)
+      ]));
+  }
 }
