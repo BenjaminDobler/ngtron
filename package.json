@@ -1,6 +1,6 @@
 {
   "name": "@richapps/ngtron",
-  "version": "0.0.23",
+  "version": "0.0.24",
   "description": "Easily serve and build angular based electron applications",
   "author": {
     "name": "Benjamin Dobler",
@@ -18,16 +18,15 @@
   "schematics": "./schematics/collection.json",
   "builders": "./builders/builders.json",
   "dependencies": {
-    "@angular-devkit/build-angular": "^0.800.0-rc.3",
-    "@angular-devkit/core": "^8.0.0-rc.4",
-    "@angular-devkit/schematics": "^8.0.0-rc.4",
-    "@angular/compiler": "^8.0.0-rc.5",
-    "@angular/compiler-cli": "^8.0.0-rc.5",
-    "@angular/core": "^8.0.0-rc.5",
-    "@schematics/angular": "^8.0.0-rc.4"
+    "@angular-devkit/build-angular": "^0.800.0",
+    "@angular-devkit/core": "^8.0.0",
+    "@angular-devkit/schematics": "^8.0.0",
+    "@angular/compiler": "^8.0.0",
+    "@angular/compiler-cli": "^8.0.0",
+    "@schematics/angular": "^8.0.0"
   },
   "devDependencies": {
-    "@types/jasmine": "^3.0.0",
+    "@types/jasmine": "^3.3.13",
     "@types/node": "~11.9.0",
     "@types/webpack": "^4.4.32",
     "@types/webpack-dev-server": "^3.1.6",
@@ -36,6 +35,6 @@
     "jasmine": "^3.0.0",
     "quicktype": "^15.0.194",
     "tslint": "~5.15.0",
-    "typescript": "^3.4.5"
+    "typescript": "^3.5.1"
   }
 }
