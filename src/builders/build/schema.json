@@ -4,9 +4,17 @@
   "description": "Dev Server target options for Build Facade.",
   "type": "object",
   "properties": {
-    "browserTarget": {
+    "rendererTargets": {
+      "description": "One or more renderer targets for your project (angular projects)",
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": ".+:.+(:.+)?"
+      }
+    },
+    "mainTarget": {
+      "description": "The main process for your electron project (a node app)",
       "type": "string",
-      "description": "Target to serve.",
       "pattern": ".+:.+(:.+)?"
     },
     "port": {
@@ -19,5 +27,5 @@
     }
   },
   "additionalProperties": false,
-  "required": ["browserTarget"]
+  "required": ["mainTarget", "rendererTargets"]
 }

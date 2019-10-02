@@ -13,16 +13,18 @@
   },
   "license": "MIT",
   "scripts": {
-    "build": "tsc -p tsconfig.json"
+    "build": "tsc -p tsconfig.json && npm run copy:json",
+    "copy:json": "cpx 'src/**/*.json' ./dist"
   },
-  "schematics": "./schematics/collection.json",
-  "builders": "./builders/builders.json",
+  "schematics": "./dist/schematics/collection.json",
+  "builders": "./dist/builders/builders.json",
   "dependencies": {
     "@angular-devkit/build-angular": "^0.800.0",
     "@angular-devkit/core": "^8.0.0",
     "@angular-devkit/schematics": "^8.0.0",
     "@angular/compiler": "^8.0.0",
     "@angular/compiler-cli": "^8.0.0",
+    "@angular/core": "^8.0.0",
     "@schematics/angular": "^8.0.0"
   },
   "devDependencies": {
@@ -30,11 +32,12 @@
     "@types/node": "~11.9.0",
     "@types/webpack": "^4.4.32",
     "@types/webpack-dev-server": "^3.1.6",
+    "cpx": "^1.5.0",
     "electron": "^4.2.2",
     "electron-builder": "20.39.0",
     "jasmine": "^3.0.0",
     "quicktype": "^15.0.194",
     "tslint": "~5.15.0",
-    "typescript": "^3.5.1"
+    "typescript": "~3.4.3"
   }
 }

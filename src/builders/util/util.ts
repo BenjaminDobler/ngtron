@@ -81,6 +81,7 @@ export const electronBuildWebpackConfigTransformFactory: any = (options: any, bu
 
     webpackConfig.target = "electron-renderer";
     webpackConfig.optimization.splitChunks = false; // What the F!
+    console.log(webpackConfig);
 
     return webpackConfig;
   };
