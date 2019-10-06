@@ -1,102 +1,89 @@
 import { BuilderContext, BuilderOutput, createBuilder, targetFromTargetString, scheduleTargetAndForget, BuilderRun } from "@angular-devkit/architect";
 import { DevServerBuilderOptions, DevServerBuilderOutput } from "@angular-devkit/build-angular";
-import { from, Observable, combineLatest } from "rxjs";
-import { mapTo, switchMap, combineAll } from "rxjs/operators";
-import { openElectron, reloadElectron } from "../util/electron";
+import { from, Observable, combineLatest, timer } from "rxjs";
+import { mapTo, switchMap, combineAll, tap, timeout } from "rxjs/operators";
+import { openElectron } from "../util/electron";
 import { compile, electronBuildWebpackConfigTransformFactory } from "../util/util";
 import { buildWebpackBrowser } from "@angular-devkit/build-angular/src/browser";
 import * as ts from "typescript";
 import { basename, join } from "path";
-import { copyFileSync, writeFileSync } from "fs";
+import { copyFileSync, writeFileSync, existsSync, readFileSync } from "fs";
 import { build } from "electron-builder";
-import { JsonObject } from "@angular-devkit/core";
+import { JsonObject, resolve } from "@angular-devkit/core";
+import { symlinkSync } from "fs-extra-p";
 
 export interface NGTronBuildOptions extends JsonObject {
   mainTarget: string;
+  outputPath: string;
+  rendererOutputPath: string;
   rendererTargets: string[];
 }
 
 export const execute = (options: NGTronBuildOptions, context: BuilderContext): Observable<BuilderOutput> => {
   console.log("Options ", options);
 
-  const runs: Observable<BuilderOutput>[] = [];
-  async function setup() {
-    for (let i = 0; i < options.rendererTargets.length; i++) {
-      const rendererTarget = targetFromTargetString(options.rendererTargets[i]);
-      const run: BuilderRun = await context.scheduleTarget(rendererTarget);
-      runs.push(run.output);
-    }
-  }
 
-  // combineAll(runs)
-
-  combineLatest(runs).subscribe(() => {
-    console.log("Yeah");
-  });
-
-  return from(setup()).pipe(wmapTo({ success: true }));
-
-  /*
-  let serverOptions;
-  let buildElectronOptions;
-
-  async function setup() {
-    const browserTarget = targetFromTargetString(options.browserTarget);
-    serverOptions = await context.getTargetOptions(browserTarget);
-    const buildOptions = await context.getTargetOptions({
-      project: context.target.project,
-      target: "build"
-    });
-    buildOptions.browserTarget = context.target.project + ":build";
-    buildOptions.port = options.port ? options.port : 4200;
-    buildOptions.watch = true;
-    buildOptions.baseHref = "./";
-
-    compile([options.electronMain as string], {
-      noEmitOnError: true,
-      noImplicitAny: true,
-      target: ts.ScriptTarget.ES2015,
-      module: ts.ModuleKind.CommonJS,
-      outDir: buildOptions.outputPath as string
-    });
-
-    const outputPath = buildOptions.outputPath as string;
-
-    const electronBuildTarget = targetFromTargetString(context.target.project + ":package-electron");
-    buildElectronOptions = await context.getTargetOptions(electronBuildTarget);
-
-    const fromMain = join(context.workspaceRoot, options.electronMain as string);
-    const toMain = join(outputPath, basename(options.electronMain as string));
-    copyFileSync(fromMain, toMain);
-
-    // write electron package to dist
-    writeFileSync(join(outputPath, "package.json"), JSON.stringify(buildElectronOptions.electronPackage), { encoding: "utf-8" });
-
-    return {
-      buildOptions: buildOptions,
-      buildElectronOptions: buildElectronOptions
-    };
-  }
-
-  let count = -1;
-
-  return from(setup()).pipe(
-    switchMap(opt => {
-      return buildWebpackBrowser(opt.buildOptions as any, context, {
-        webpackConfiguration: electronBuildWebpackConfigTransformFactory(opt.buildOptions, opt.buildElectronOptions, context)
-      });
-    }),
-    switchMap((x: any) => {
-      count++;
-      if (count < 1) {
-        return openElectron(x, join(x.outputPath, "electron.js"), context);
-      } else {
-        return reloadElectron(x, context);
+  async function init() {
+    // Add the renderer targets
+    const builderRuns$: Observable<BuilderRun>[] = options.rendererTargets.map((target) => {
+      const rendererTarget = targetFromTargetString(target);
+      const overrides = {
+        outputPath: options.rendererOutputPath + '/' + rendererTarget.project,
+        watch: true,
+        baseHref: "./"
       }
-    }),
-    mapTo({ success: true })
+      return from(context.scheduleTarget(rendererTarget, overrides));
+    });
+
+    // Add the node js main target
+    const mainTarget = targetFromTargetString(options.mainTarget);
+    const mainOptions: any = await context.getTargetOptions(mainTarget);
+    const mainOverrides = {
+      watch: true,
+      outputPath: options.outputPath,
+      webpackConfigObject: {
+        node: {
+          __dirname: false
+        }
+      }
+    };
+    builderRuns$.push(from(context.scheduleTarget(mainTarget, mainOverrides)));
+
+    const electronBuildNodeModules = join(context.workspaceRoot, options.outputPath, 'node_modules');
+    if (!existsSync(electronBuildNodeModules)) {
+      const workspaceNodeModules = join(context.workspaceRoot, 'node_modules');
+      symlinkSync(workspaceNodeModules, electronBuildNodeModules, 'junction');
+    }
+
+    // copy electron package.json
+    const electronPkgPath = join(context.workspaceRoot, 'projects', context.target.project, 'package.json');
+    const electronPKG = JSON.parse(readFileSync(electronPkgPath, { encoding: 'utf-8' }));
+    electronPKG.main = basename(mainOptions.main, '.ts') + '.js';
+    const electronPkgDistPath = join(context.workspaceRoot, options.outputPath, 'package.json');
+    writeFileSync(electronPkgDistPath, JSON.stringify(electronPKG, null, 4), { encoding: 'utf-8' });
+
+    return builderRuns$;
+  }
+
+  return from(init()).pipe(
+    switchMap(builderRuns$ => combineLatest(builderRuns$)
+      .pipe(
+        switchMap(runs => combineLatest(runs.map(run => run.output.pipe(
+          tap((builderOutput: BuilderOutput) => {
+            console.log("------ Output! ", builderOutput.target.project);
+          })
+        )))),
+        tap((builderOutputs: BuilderOutput[]) => {
+          console.log("------- ALL Done");
+          openElectron(join(context.workspaceRoot, options.outputPath), context).subscribe();
+          context.reportRunning();
+        }),
+        mapTo({ success: true })
+      ))
   );
-  */
-};
+
+}
+
+
 
 export default createBuilder<NGTronBuildOptions, DevServerBuilderOutput>(execute);

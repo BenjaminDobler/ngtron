@@ -25,7 +25,8 @@
     "@angular/compiler": "^8.0.0",
     "@angular/compiler-cli": "^8.0.0",
     "@angular/core": "^8.0.0",
-    "@schematics/angular": "^8.0.0"
+    "@schematics/angular": "^8.0.0",
+    "ts-loader": "6.0.4"
   },
   "devDependencies": {
     "@types/jasmine": "^3.3.13",

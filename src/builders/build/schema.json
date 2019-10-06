@@ -21,9 +21,13 @@
       "type": "number",
       "description": "The port to use to serve the application."
     },
-    "electronMain": {
+    "outputPath": {
       "type": "string",
-      "description": "The port to use to serve the application."
+      "description": "Path where the electron app will be build."
+    },
+    "rendererOutputPath": {
+      "type": "string",
+      "description": "Path where the renderer apps will be created."
     }
   },
   "additionalProperties": false,
