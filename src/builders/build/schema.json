@@ -17,13 +17,17 @@
       "type": "string",
       "pattern": ".+:.+(:.+)?"
     },
-    "port": {
+    "devServerPort": {
       "type": "number",
-      "description": "The port to use to serve the application."
+      "description": "the port where the dev server listens for changes."
     },
     "outputPath": {
       "type": "string",
       "description": "Path where the electron app will be build."
+    },
+    "watch": {
+      "type": "boolean",
+      "description": ""
     },
     "rendererOutputPath": {
       "type": "string",

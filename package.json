@@ -26,7 +26,9 @@
     "@angular/compiler-cli": "^8.0.0",
     "@angular/core": "^8.0.0",
     "@schematics/angular": "^8.0.0",
-    "ts-loader": "6.0.4"
+    "ts-loader": "6.0.4",
+    "webpack-inject-plugin": "^1.5.3",
+    "ws": "^7.1.2"
   },
   "devDependencies": {
     "@types/jasmine": "^3.3.13",
