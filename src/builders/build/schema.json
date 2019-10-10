@@ -29,6 +29,11 @@
       "type": "boolean",
       "description": ""
     },
+    "serve": {
+      "type": "boolean",
+      "description": "",
+      "boolean": false
+    },
     "rendererOutputPath": {
       "type": "string",
       "description": "Path where the renderer apps will be created."

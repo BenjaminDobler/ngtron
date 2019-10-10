@@ -1,18 +1,16 @@
-import { BuilderContext, BuilderOutput, createBuilder, targetFromTargetString, scheduleTargetAndForget, BuilderRun } from "@angular-devkit/architect";
-import { DevServerBuilderOptions, DevServerBuilderOutput } from "@angular-devkit/build-angular";
-import { from, Observable, combineLatest, timer } from "rxjs";
-import { mapTo, switchMap, combineAll, tap, timeout } from "rxjs/operators";
+import { BuilderContext, BuilderOutput, createBuilder, targetFromTargetString, BuilderRun } from "@angular-devkit/architect";
+import { DevServerBuilderOutput } from "@angular-devkit/build-angular";
+import { from, Observable, combineLatest } from "rxjs";
+import { mapTo, switchMap, tap } from "rxjs/operators";
 import { openElectron } from "../util/electron";
-import { compile, electronBuildWebpackConfigTransformFactory } from "../util/util";
-import { buildWebpackBrowser } from "@angular-devkit/build-angular/src/browser";
-import * as ts from "typescript";
 import { basename, join } from "path";
-import { copyFileSync, writeFileSync, existsSync, readFileSync } from "fs";
-import { build } from "electron-builder";
-import { JsonObject, resolve } from "@angular-devkit/core";
-import { symlinkSync } from "fs-extra-p";
+import { writeFileSync, existsSync, readFileSync } from "fs";
+import { JsonObject } from "@angular-devkit/core";
+import { symlinkSync, removeSync, ensureDirSync } from "fs-extra-p";
 import { DevServer } from "../util/dev.server";
 const InjectPlugin = require('webpack-inject-plugin').default;
+import { getExternals } from '../util/externals';
+
 
 export interface NGTronBuildOptions extends JsonObject {
   mainTarget: string;
@@ -21,23 +19,35 @@ export interface NGTronBuildOptions extends JsonObject {
   rendererTargets: string[];
   devServerPort: number;
   watch: boolean;
+  serve: boolean;
 }
 
 export const execute = (options: NGTronBuildOptions, context: BuilderContext): Observable<BuilderOutput> => {
-  console.log("Options ", options);
   let devServer: DevServer;
 
-
   async function init() {
+
+    removeSync(join(context.workspaceRoot, options.outputPath));
+    ensureDirSync(join(context.workspaceRoot, options.outputPath));
+
+    const electronPkgPath = join(context.workspaceRoot, 'projects', context.target.project, 'package.json');
+    const electronPkgString = readFileSync(electronPkgPath, { encoding: 'utf-8' });
+    const electronPkg = JSON.parse(electronPkgString);
+
+    const externals = getExternals(electronPkg.dependencies || {});
+
     // Add the renderer targets
     const builderRuns$: Observable<BuilderRun>[] = options.rendererTargets.map((target) => {
       const rendererTarget = targetFromTargetString(target);
       const overrides = {
         outputPath: options.rendererOutputPath + '/' + rendererTarget.project,
-        watch: true,
+        watch: options.watch,
         baseHref: "./",
         aot: false,
-        optimization: false
+        optimization: false,
+        webpackConfig: {
+          externals: externals
+        }
       }
       return from(context.scheduleTarget(rendererTarget, overrides));
     });
@@ -54,7 +64,7 @@ export const execute = (options: NGTronBuildOptions, context: BuilderContext): O
       }
     };
 
-    if (options.watch) {
+    if (options.serve && options.watch) {
       devServer = new DevServer(options.devServerPort || 6001);
       mainWebpackConfig.plugins = [
         new InjectPlugin(function () {
@@ -74,14 +84,15 @@ export const execute = (options: NGTronBuildOptions, context: BuilderContext): O
     builderRuns$.push(from(context.scheduleTarget(mainTarget, mainOverrides)));
 
     // Symlink node modules for dev mode
-    const electronBuildNodeModules = join(context.workspaceRoot, options.outputPath, 'node_modules');
-    if (!existsSync(electronBuildNodeModules)) {
-      const workspaceNodeModules = join(context.workspaceRoot, 'node_modules');
-      symlinkSync(workspaceNodeModules, electronBuildNodeModules, 'junction');
+    if (options.serve) {
+      const electronBuildNodeModules = join(context.workspaceRoot, options.outputPath, 'node_modules');
+      if (!existsSync(electronBuildNodeModules)) {
+        const workspaceNodeModules = join(context.workspaceRoot, 'node_modules');
+        symlinkSync(workspaceNodeModules, electronBuildNodeModules, 'junction');
+      }
     }
 
     // copy electron package.json
-    const electronPkgPath = join(context.workspaceRoot, 'projects', context.target.project, 'package.json');
     const electronPKG = JSON.parse(readFileSync(electronPkgPath, { encoding: 'utf-8' }));
     electronPKG.main = basename(mainOptions.main, '.ts') + '.js';
     const electronPkgDistPath = join(context.workspaceRoot, options.outputPath, 'package.json');
@@ -93,30 +104,34 @@ export const execute = (options: NGTronBuildOptions, context: BuilderContext): O
   return from(init()).pipe(
     switchMap(builderRuns$ => combineLatest(builderRuns$)
       .pipe(
-        switchMap(runs => combineLatest(runs.map(run => run.output.pipe(
-          tap((builderOutput: BuilderOutput) => {
-            console.log("------ Output! ", builderOutput);
-            if (builderOutput.info.name.startsWith('@richapps/ngnode')) {
-              console.log("Background build ");
-              openElectron(join(context.workspaceRoot, options.outputPath), context).subscribe();
-            } else {
-              if (devServer) {
-                devServer.sendUpdate({ type: 'renderer', info: builderOutput });
-              }
-              console.log("Foreground build");
-            }
-          })
-        )))),
-        tap((builderOutputs: BuilderOutput[]) => {
-          console.log("------- ALL Done");
-          context.reportRunning();
+        switchMap(runs => combineLatest(runs.map(run => {
+
+          if (options.serve) {
+            return run.output.pipe(
+              tap((builderOutput: BuilderOutput) => {
+                if (builderOutput.info.name.startsWith('@richapps/ngnode') && options.serve) {
+                  openElectron(join(context.workspaceRoot, options.outputPath), context).subscribe();
+                } else {
+                  if (devServer) {
+                    devServer.sendUpdate({ type: 'renderer', info: builderOutput });
+                  }
+                }
+              })
+            )
+          } else {
+            return from(run.result);
+          }
+        })
+        )),
+        tap(() => {
+          if (options.watch) {
+            context.reportRunning();
+          }
         }),
         mapTo({ success: true })
       ))
   );
 
 }
-
-
 
 export default createBuilder<NGTronBuildOptions, DevServerBuilderOutput>(execute);

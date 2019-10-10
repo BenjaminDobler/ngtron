@@ -9,7 +9,6 @@ const builder = require("electron-builder");
 
 let electronProcess: ChildProcess;
 export function openElectron(distFolder, context: BuilderContext): Observable<BuilderOutput> {
-  console.log("Open Eledctron ", distFolder);
   return new Observable(observer => {
     const electronBin = isMac() ? "./node_modules/.bin/electron" : "node_modules/electron/dist/electron";
 

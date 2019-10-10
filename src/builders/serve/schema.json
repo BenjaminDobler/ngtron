@@ -4,20 +4,12 @@
   "description": "Dev Server target options for Build Facade.",
   "type": "object",
   "properties": {
-    "browserTarget": {
+    "buildTarget": {
       "type": "string",
       "description": "Target to serve.",
       "pattern": ".+:.+(:.+)?"
-    },
-    "port": {
-      "type": "number",
-      "description": "The port to use to serve the application."
-    },
-    "electronMain": {
-      "type": "string",
-      "description": "The port to use to serve the application."
     }
   },
   "additionalProperties": false,
-  "required": ["browserTarget"]
+  "required": ["buildTarget"]
 }
