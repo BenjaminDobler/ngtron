@@ -6,7 +6,7 @@ import { openElectron } from "../util/electron";
 import { basename, join } from "path";
 import { writeFileSync, existsSync, readFileSync } from "fs";
 import { JsonObject } from "@angular-devkit/core";
-import { symlinkSync, removeSync, ensureDirSync } from "fs-extra-p";
+import { symlinkSync, removeSync, ensureDirSync } from "fs-extra";
 import { DevServer } from "../util/dev.server";
 const InjectPlugin = require('webpack-inject-plugin').default;
 import { getExternals } from '../util/externals';
@@ -20,6 +20,7 @@ export interface NGTronBuildOptions extends JsonObject {
   devServerPort: number;
   watch: boolean;
   serve: boolean;
+  package: string;
 }
 
 export const execute = (options: NGTronBuildOptions, context: BuilderContext): Observable<BuilderOutput> => {
@@ -30,7 +31,7 @@ export const execute = (options: NGTronBuildOptions, context: BuilderContext): O
     removeSync(join(context.workspaceRoot, options.outputPath));
     ensureDirSync(join(context.workspaceRoot, options.outputPath));
 
-    const electronPkgPath = join(context.workspaceRoot, 'projects', context.target.project, 'package.json');
+    const electronPkgPath = join(context.workspaceRoot, options.package);
     const electronPkgString = readFileSync(electronPkgPath, { encoding: 'utf-8' });
     const electronPkg = JSON.parse(electronPkgString);
 

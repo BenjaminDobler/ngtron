@@ -37,6 +37,10 @@
     "rendererOutputPath": {
       "type": "string",
       "description": "Path where the renderer apps will be created."
+    },
+    "package": {
+      "type": "string",
+      "description": "Path to the package json for the electron app."
     }
   },
   "additionalProperties": false,
