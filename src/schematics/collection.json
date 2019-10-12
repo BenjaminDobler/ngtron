@@ -1,11 +1,17 @@
 {
-  "$schema": "../node_modules/@angular-devkit/schematics/collection-schema.json",
+  "$schema": "../../node_modules/@angular-devkit/schematics/collection-schema.json",
   "schematics": {
     "ng-add": {
       "description": "Adds NGTron to the application without affecting any templates",
       "factory": "./ng-add/index",
       "schema": "./ng-add/schema.json",
       "aliases": ["install"]
+    },
+    "application": {
+      "description": "Adds NGTron to the application without affecting any templates",
+      "factory": "./application/index",
+      "schema": "./application/schema.json",
+      "aliases": ["app"]
     }
   }
 }

@@ -1,13 +1,18 @@
-import {Schema} from "./schema";
-import {getWorkspace, updateWorkspace} from "@schematics/angular/utility/config";
-import {addPackageJsonDependency, NodeDependency, NodeDependencyType} from "@schematics/angular/utility/dependencies";
-import {NodePackageInstallTask} from "@angular-devkit/schematics/tasks";
+import { getWorkspace, updateWorkspace } from "@schematics/angular/utility/config";
+import { addPackageJsonDependency, NodeDependency, NodeDependencyType } from "@schematics/angular/utility/dependencies";
+import { NodePackageInstallTask } from "@angular-devkit/schematics/tasks";
 import * as path from "path";
-import {getProject} from "@schematics/angular/utility/project";
+import { getProject } from "@schematics/angular/utility/project";
 
-import {apply, chain, mergeWith, move, Rule, SchematicContext, template, Tree, url} from "@angular-devkit/schematics";
+import { apply, chain, mergeWith, move, Rule, SchematicContext, template, Tree, url } from "@angular-devkit/schematics";
 
-export default function (options: Schema): Rule {
+
+export interface NgAddOptions {
+  project: string;
+}
+
+
+export default function (options: NgAddOptions): Rule {
   return (tree: Tree, _context: SchematicContext) => {
     return chain([
       updateArchitect(options),
@@ -18,7 +23,7 @@ export default function (options: Schema): Rule {
   };
 }
 
-function updateArchitect(options: Schema): Rule {
+function updateArchitect(options: NgAddOptions): Rule {
   return (tree: Tree, _context: SchematicContext) => {
     const workspace = getWorkspace(tree);
     const project = getProject(tree, options.project);
@@ -85,10 +90,10 @@ function addPackageJsonDependencies(): Rule {
 
     // TODO: Get latest electroin dependency or let user choose
     const dependencies: NodeDependency[] = [
-      {type: NodeDependencyType.Dev, version: "~4.0.0", name: "electron"},
-      {type: NodeDependencyType.Dev, version: "20.39.0", name: "electron-builder"},
-      {type: NodeDependencyType.Dev, version: "^8.10.46", name: "@types/node"},
-      {type: NodeDependencyType.Dev, version: "^0.2.0", name: "electron-reloader"}
+      { type: NodeDependencyType.Dev, version: "~4.0.0", name: "electron" },
+      { type: NodeDependencyType.Dev, version: "20.39.0", name: "electron-builder" },
+      { type: NodeDependencyType.Dev, version: "^8.10.46", name: "@types/node" },
+      { type: NodeDependencyType.Dev, version: "^0.2.0", name: "electron-reloader" }
     ];
 
     dependencies.forEach(dependency => {
@@ -112,7 +117,7 @@ function addFiles(options) {
   return (host: Tree, context: SchematicContext) => {
     const project = getProject(host, options.project);
     return mergeWith(
-      apply(url(`./files`), [
+      apply(url(`../files/electron`), [
         template({
           tmpl: ''
         }),
