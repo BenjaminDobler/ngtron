@@ -11,10 +11,10 @@ export interface NgGenerateOptions {
 
 
 export default function (options: NgGenerateOptions): Rule {
-  console.log("Generate Electron App");
   return (tree: Tree, _context: SchematicContext) => {
     return chain([
       addRendererProject(options),
+      updateRendererWorkspace(options),
       addElectronProject(options),
       updateElectronWorkspace(options),
       addMainProject(options),
@@ -36,34 +36,34 @@ function updateElectronWorkspace(options): Rule {
           builder: "@richapps/ngtron:build",
           options: {
             rendererTargets: [rendererName + ":build"],
-            mainTarget: "main:build-node",
+            mainTarget: "main:build",
             outputPath: "dist/" + projectName,
             rendererOutputPath: "dist/" + projectName + "/renderers",
             package: "projects/" + projectName + "/package.json"
           }
         },
-        "serve": {
-          "builder": "@richapps/ngtron:serve",
-          "options": {
-            "buildTarget": projectName + ":build"
+        serve: {
+          builder: "@richapps/ngtron:serve",
+          options: {
+            buildTarget: projectName + ":build"
           }
         },
-        "package": {
-          "builder": "@richapps/ngtron:package",
-          "options": {
-            "buildTarget": projectName + ":build",
-            "packagerConfig": {
-              "mac": ["zip", "dmg"],
-              "config": {
-                "appId": "some.id",
-                "npmRebuild": false,
-                "asar": false,
-                "directories": {
-                  "app": "dist/" + projectName,
-                  "output": "dist/" + projectName + "-package",
-                  "buildResources": "project/" + projectName + "/electronResources"
+        package: {
+          builder: "@richapps/ngtron:package",
+          options: {
+            buildTarget: projectName + ":build",
+            packagerConfig: {
+              mac: ["zip", "dmg"],
+              config: {
+                appId: "some.id",
+                npmRebuild: false,
+                asar: false,
+                directories: {
+                  app: "dist/" + projectName,
+                  output: "dist/" + projectName + "-package",
+                  buildResources: "project/" + projectName + "/electronResources"
                 },
-                "electronVersion": "4.0.0"
+                electronVersion: "4.0.0"
               }
             }
           }
@@ -80,17 +80,17 @@ function updateMainWorkspace(options): Rule {
     const workspace: any = getWorkspace2(tree);
     const projectName = options.project + '-main';
     workspace.projects[projectName] = {
-      "projectType": "application",
-      "root": "projects/" + projectName,
-      "sourceRoot": "projects/" + projectName + "/src",
-      "prefix": "app",
-      "architect": {
-        "build-node": {
-          "builder": "@richapps/ngnode:build",
-          "options": {
-            "outputPath": "dist/" + projectName,
-            "main": "projects/" + projectName + "/src/main.ts",
-            "tsConfig": "projects/" + projectName + "/tsconfig.json"
+      projectType: "application",
+      root: "projects/" + projectName,
+      sourceRoot: "projects/" + projectName + "/src",
+      prefix: "app",
+      architect: {
+        build: {
+          builder: "@richapps/ngnode:build",
+          options: {
+            outputPath: "dist/" + projectName,
+            main: "projects/" + projectName + "/src/main.ts",
+            tsConfig: "projects/" + projectName + "/tsconfig.json"
           }
         }
       }
@@ -99,7 +99,14 @@ function updateMainWorkspace(options): Rule {
   }
 }
 
-
+function updateRendererWorkspace(options): Rule {
+  return async (tree: Tree, _context: SchematicContext) => {
+    const workspace: any = getWorkspace2(tree);
+    const projectName = options.project + '-renderer';
+    workspace.projects[projectName].build.builder = '@richapps/build-angular:browser'
+    return updateWorkspace(workspace);
+  }
+}
 
 export const addElectronProject = (options) => {
   return addElectronFiles('projects/' + options.project + '-electron');
