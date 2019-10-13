@@ -17,7 +17,8 @@ export default function (options: NgGenerateOptions): Rule {
       addRendererProject(options),
       addElectronProject(options),
       updateElectronWorkspace(options),
-      addMainProject(options)
+      addMainProject(options),
+      updateMainWorkspace(options)
     ])(tree, _context);
   };
 }
@@ -72,6 +73,32 @@ function updateElectronWorkspace(options): Rule {
     return updateWorkspace(workspace);
   }
 }
+
+
+function updateMainWorkspace(options): Rule {
+  return async (tree: Tree, _context: SchematicContext) => {
+    const workspace: any = getWorkspace2(tree);
+    const projectName = options.project + '-main';
+    workspace.projects[projectName] = {
+      "projectType": "application",
+      "root": "projects/" + projectName,
+      "sourceRoot": "projects/" + projectName + "/src",
+      "prefix": "app",
+      "architect": {
+        "build-node": {
+          "builder": "@richapps/ngnode:build",
+          "options": {
+            "outputPath": "dist/" + projectName,
+            "main": "projects/" + projectName + "/src/main.ts",
+            "tsConfig": "projects/" + projectName + "/tsconfig.json"
+          }
+        }
+      }
+    }
+    return updateWorkspace(workspace);
+  }
+}
+
 
 
 export const addElectronProject = (options) => {
