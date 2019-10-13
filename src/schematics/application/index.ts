@@ -3,6 +3,7 @@ import { SchematicContext, chain, Rule, externalSchematic, mergeWith, apply, url
 import { updateWorkspace } from "@schematics/angular/utility/config";
 import { getWorkspace as getWorkspace2 } from "@schematics/angular/utility/config";
 import { ProjectType } from "@schematics/angular/utility/workspace-models";
+import { experimental } from "@angular-devkit/core";
 
 
 export interface NgGenerateOptions {
@@ -14,11 +15,24 @@ export default function (options: NgGenerateOptions): Rule {
   return (tree: Tree, _context: SchematicContext) => {
     return chain([
       addRendererProject(options),
-      updateRendererWorkspace(options),
       addElectronProject(options),
       updateElectronWorkspace(options),
       addMainProject(options),
-      updateMainWorkspace(options)
+      updateMainWorkspace(options),
+      updateRendererWorkspace(options)
+      /*
+      (tree: Tree, _context: SchematicContext) => {
+        const workspaceConfig = tree.read('/angular.json');
+        const workspaceContent = workspaceConfig.toString();
+        // parse workspace string into JSON object
+        const workspace: any = JSON.parse(workspaceContent);
+        console.log(workspace);
+        const projectName = options.project + '-renderer';
+        workspace.projects[projectName].architect.build.builder = '@richapps/build-angular:browser';
+        tree.overwrite('./angular.json', JSON.stringify(workspace, null, 4));
+        return tree;
+      },
+      */
     ])(tree, _context);
   };
 }
@@ -28,6 +42,7 @@ function updateElectronWorkspace(options): Rule {
     const workspace: any = getWorkspace2(tree);
     const projectName = options.project + '-electron';
     const rendererName = options.project + '-renderer';
+    const mainName = options.project + '-main';
     workspace.projects[projectName] = {
       projectType: ProjectType.Application,
       root: "projects/electron",
@@ -36,7 +51,7 @@ function updateElectronWorkspace(options): Rule {
           builder: "@richapps/ngtron:build",
           options: {
             rendererTargets: [rendererName + ":build"],
-            mainTarget: "main:build",
+            mainTarget: mainName + ":build",
             outputPath: "dist/" + projectName,
             rendererOutputPath: "dist/" + projectName + "/renderers",
             package: "projects/" + projectName + "/package.json"
@@ -103,7 +118,7 @@ function updateRendererWorkspace(options): Rule {
   return async (tree: Tree, _context: SchematicContext) => {
     const workspace: any = getWorkspace2(tree);
     const projectName = options.project + '-renderer';
-    workspace.projects[projectName].build.builder = '@richapps/build-angular:browser'
+    workspace.projects[projectName].architect.build.builder = '@richapps/build-angular:browser'
     return updateWorkspace(workspace);
   }
 }
@@ -121,7 +136,6 @@ export const addRendererProject = (options: NgGenerateOptions) => {
 }
 
 function addElectronFiles(dest) {
-  console.log("Dest ", dest);
   return (host: Tree, context: SchematicContext) => {
     // const project = getProject(host, options.project);
     return mergeWith(

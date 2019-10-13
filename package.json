@@ -13,8 +13,9 @@
   },
   "license": "MIT",
   "scripts": {
-    "build": "tsc -p tsconfig.json && npm run copy:json",
-    "copy:json": "cpx 'src/**/*.json' ./dist"
+    "build": "tsc -p tsconfig.json && npm run copy:json && npm run copy:files",
+    "copy:json": "cpx 'src/**/*.json' ./dist",
+    "copy:files": "cpx \"./src/schematics/files/**/*\" \"./dist/schematics/files\""
   },
   "schematics": "./dist/schematics/collection.json",
   "builders": "./dist/builders/builders.json",
