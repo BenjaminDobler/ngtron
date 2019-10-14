@@ -19,7 +19,7 @@ function createWindow(path: string) {
 
 
 app.on('ready', () => {
-  createWindow(join(__dirname, 'renderers', 'frontend', 'index.html'));
+  createWindow(join(__dirname, 'renderers', '<%= renderer %>', 'index.html'));
 });
 
 app.on('window-all-closed', () => {

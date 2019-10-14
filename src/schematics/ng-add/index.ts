@@ -93,7 +93,8 @@ function addPackageJsonDependencies(): Rule {
       { type: NodeDependencyType.Dev, version: "~4.0.0", name: "electron" },
       { type: NodeDependencyType.Dev, version: "20.39.0", name: "electron-builder" },
       { type: NodeDependencyType.Dev, version: "^8.10.46", name: "@types/node" },
-      { type: NodeDependencyType.Dev, version: "^0.2.0", name: "electron-reloader" }
+      { type: NodeDependencyType.Dev, version: "next", name: "@richapps/ngnode" },
+      { type: NodeDependencyType.Dev, version: "next", name: "@richapps/build-angular" }
     ];
 
     dependencies.forEach(dependency => {
