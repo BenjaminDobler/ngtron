@@ -9,104 +9,138 @@ import { JsonParseMode, parseJson } from '@angular-devkit/core';
 
 export interface NgGenerateOptions {
   project: string;
+  singleProject: boolean;
 }
 
 
 export default function (options: NgGenerateOptions): Rule {
   return (tree: Tree, _context: SchematicContext) => {
-    return chain([
-      addRendererProject(options),
+    const projectExists = false;
+    let rules = [];
+    if (!options.singleProject || (options.singleProject && !projectExists)) {
+      rules.push(addRendererProject(options))
+    }
+    rules = [...rules, ...[
       addElectronProject(options),
       updateElectronWorkspace(options),
       addMainProject(options),
       updateMainWorkspace(options),
       updateRendererWorkspace(options),
       updateRendererTSConfig(options)
-    ])(tree, _context);
+    ]];
+    return chain(rules)(tree, _context);
   };
 }
 
 function updateElectronWorkspace(options): Rule {
+  console.log("updateElectronWorkspace");
   return async (tree: Tree, _context: SchematicContext) => {
     const workspace: any = getWorkspace2(tree);
-    const projectName = options.project + '-electron';
-    const rendererName = options.project + '-renderer';
-    const mainName = options.project + '-main';
-    workspace.projects[projectName] = {
-      projectType: ProjectType.Application,
-      root: "projects/electron",
-      architect: {
-        build: {
-          builder: "@richapps/ngtron:build",
-          options: {
-            rendererTargets: [rendererName + ":build"],
-            mainTarget: mainName + ":build",
-            outputPath: "dist/" + projectName,
-            rendererOutputPath: "dist/" + projectName + "/renderers",
-            package: "projects/" + projectName + "/package.json"
-          }
-        },
-        serve: {
-          builder: "@richapps/ngtron:serve",
-          options: {
-            buildTarget: projectName + ":build"
-          }
-        },
-        package: {
-          builder: "@richapps/ngtron:package",
-          options: {
-            buildTarget: projectName + ":build",
-            packagerConfig: {
-              mac: ["zip", "dmg"],
-              config: {
-                appId: "some.id",
-                npmRebuild: false,
-                asar: false,
-                directories: {
-                  app: "dist/" + projectName,
-                  output: "dist/" + projectName + "-package",
-                  buildResources: "project/" + projectName + "/electronResources"
-                },
-                electronVersion: "4.0.0"
-              }
-            }
+    const projectName = options.singleProject ? options.project : options.project + '-electron';
+    const rendererName = options.singleProject ? options.project : options.project + '-renderer';
+    const mainName = options.singleProject ? options.project : options.project + '-main';
+
+    let architectBuildName = options.singleProject ? 'build-electron' : 'build';
+    let architectServeName = options.singleProject ? 'serve-electron' : 'serve';
+    let architectPackageName = options.singleProject ? 'package-electron' : 'package';
+
+    let mainBuildTarget = options.singleProject ? options.project + ':build-node' : mainName + ":build";
+    let packagePath = options.singleProject ? "projects/" + projectName + "/electron/package.json" : "projects/" + projectName + "/package.json"
+    let buildResourcesPath = options.singleProject ? "project/" + projectName + "/electron/electronResources" : "project/" + projectName + "/electronResources";
+    if (!options.singleProject) {
+      workspace.projects[projectName] = {
+        projectType: ProjectType.Application,
+        root: "projects/electron",
+        architect: {}
+      }
+    }
+    const architect = workspace.projects[projectName].architect;
+
+
+    architect[architectBuildName] = {
+      builder: "@richapps/ngtron:build",
+      options: {
+        rendererTargets: [rendererName + ":build"],
+        mainTarget: mainBuildTarget,
+        outputPath: "dist/" + projectName,
+        rendererOutputPath: "dist/" + projectName + "/renderers",
+        package: packagePath
+      }
+    };
+
+    architect[architectServeName] = {
+      builder: "@richapps/ngtron:serve",
+      options: {
+        buildTarget: projectName + ":" + architectBuildName
+      }
+    };
+
+    architect[architectPackageName] = {
+      builder: "@richapps/ngtron:package",
+      options: {
+        buildTarget: projectName + ":" + architectBuildName,
+        packagerConfig: {
+          mac: ["zip", "dmg"],
+          config: {
+            appId: "some.id",
+            npmRebuild: false,
+            asar: false,
+            directories: {
+              app: "dist/" + projectName,
+              output: "dist/" + projectName + "-package",
+              buildResources: buildResourcesPath
+            },
+            electronVersion: "4.0.0"
           }
         }
       }
-    }
+    };
+
+
     return updateWorkspace(workspace);
   }
 }
 
 
 function updateMainWorkspace(options): Rule {
+  console.log("updateMainWorkspace");
+
   return async (tree: Tree, _context: SchematicContext) => {
     const workspace: any = getWorkspace2(tree);
-    const projectName = options.project + '-main';
-    workspace.projects[projectName] = {
-      projectType: "application",
-      root: "projects/" + projectName,
-      sourceRoot: "projects/" + projectName + "/src",
-      prefix: "app",
-      architect: {
-        build: {
-          builder: "@richapps/ngnode:build",
-          options: {
-            outputPath: "dist/" + projectName,
-            main: "projects/" + projectName + "/src/main.ts",
-            tsConfig: "projects/" + projectName + "/tsconfig.json"
-          }
-        }
-      }
+    const projectName = options.singleProject ? options.project : options.project + '-main';
+    const architectBuildName = options.singleProject ? 'build-node' : 'build';
+    const mainTsPath = options.singleProject ? "projects/" + projectName + "/electron/src/main.ts" : "projects/" + projectName + "/src/main.ts";
+    const mainTsConfigPath = options.singleProject ? "projects/" + projectName + "/electron/tsconfig.json" : "projects/" + projectName + "/tsconfig.json"
+    if (!options.singleProject) {
+      workspace.projects[projectName] = {
+        projectType: "application",
+        root: "projects/" + projectName,
+        sourceRoot: "projects/" + projectName + "/src",
+        prefix: "app",
+        architect: {}
+      };
     }
+
+    const architect = workspace.projects[projectName].architect;
+    architect[architectBuildName] = {
+      builder: "@richapps/ngnode:build",
+      options: {
+        outputPath: "dist/" + projectName,
+        main: mainTsPath,
+        tsConfig: mainTsConfigPath
+      }
+    };
+
     return updateWorkspace(workspace);
   }
 }
 
 function updateRendererWorkspace(options): Rule {
+  console.log("updateRendererWorkspace");
+
   return async (tree: Tree, _context: SchematicContext) => {
     const workspace: any = getWorkspace2(tree);
-    const projectName = options.project + '-renderer';
+    const projectName = options.singleProject ? options.project : options.project + '-renderer';
     workspace.projects[projectName].architect.build.builder = '@richapps/build-angular:browser'
     return updateWorkspace(workspace);
   }
@@ -114,10 +148,13 @@ function updateRendererWorkspace(options): Rule {
 
 
 function updateRendererTSConfig(options): Rule {
+  console.log('updateRendererTSConfig');
   return async (tree: Tree, _context: SchematicContext) => {
-    const config: any = getTSAppConfig(tree, options.project);
+    const projectName = options.singleProject ? options.project : options.project + '-renderer';
+
+    const config: any = getTSAppConfig(tree, projectName);
     config.compilerOptions.target = 'es5';
-    return updateTSAppConfig(config, options.project);
+    return updateTSAppConfig(config, projectName);
   }
 }
 
@@ -129,8 +166,7 @@ export function updateTSAppConfig(config: any, project): Rule {
 }
 
 export function getTSAppConfigPath(host: Tree, project): string {
-
-  const possibleFiles = ['/projects/' + project + '-renderer/tsconfig.app.json'];
+  const possibleFiles = ['/projects/' + project + '/tsconfig.app.json'];
   const path = possibleFiles.filter(path => host.exists(path))[0];
   return path;
 }
@@ -148,15 +184,25 @@ export function getTSAppConfig(host: Tree, project: string): any {
 
 
 export const addElectronProject = (options) => {
-  return addElectronFiles('projects/' + options.project + '-electron');
+  console.log('addElectronProject');
+
+  const dir = options.singleProject ? 'projects/' + options.project + '/electron' : 'projects/' + options.project + '-electron';
+  return addElectronFiles(dir);
 }
 
 export const addMainProject = (options) => {
-  return addMainFiles('projects/' + options.project + '-main', options.project + '-renderer');
+  console.log('addMainProject');
+
+  const dir = options.singleProject ? 'projects/' + options.project + '/electron' : 'projects/' + options.project + '-main';
+  const rendererName = options.singleProject ? options.project : options.project + '-renderer';
+  return addMainFiles(dir, rendererName);
 }
 
 export const addRendererProject = (options: NgGenerateOptions) => {
-  return externalSchematic('@schematics/angular', 'application', { name: options.project + '-renderer' });
+  console.log('addRendererProject');
+
+  const rendererName = options.singleProject ? options.project : options.project + '-renderer';
+  return externalSchematic('@schematics/angular', 'application', { name: rendererName });
 }
 
 function addElectronFiles(dest) {

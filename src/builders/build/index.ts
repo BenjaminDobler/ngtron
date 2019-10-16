@@ -102,6 +102,7 @@ export const execute = (options: NGTronBuildOptions, context: BuilderContext): O
     return builderRuns$;
   }
 
+  let allBuildOnce = false;
   return from(init()).pipe(
     switchMap(builderRuns$ => combineLatest(builderRuns$)
       .pipe(
@@ -111,7 +112,10 @@ export const execute = (options: NGTronBuildOptions, context: BuilderContext): O
             return run.output.pipe(
               tap((builderOutput: BuilderOutput) => {
                 if (builderOutput.info.name.startsWith('@richapps/ngnode') && options.serve) {
-                  openElectron(join(context.workspaceRoot, options.outputPath), context).subscribe();
+                  console.log("All Build? ", allBuildOnce);
+                  if (allBuildOnce) {
+                    openElectron(join(context.workspaceRoot, options.outputPath), context).subscribe();
+                  }
                 } else {
                   if (devServer) {
                     devServer.sendUpdate({ type: 'renderer', info: builderOutput });
@@ -125,6 +129,10 @@ export const execute = (options: NGTronBuildOptions, context: BuilderContext): O
         })
         )),
         tap(() => {
+          if (!allBuildOnce) {
+            openElectron(join(context.workspaceRoot, options.outputPath), context).subscribe();
+            allBuildOnce = true;
+          }
           if (options.watch) {
             context.reportRunning();
           }

@@ -31,7 +31,7 @@ export class DevServer {
               const socket = new WebSocket('ws://localhost:6001');
 
                 socket.on('open', () => {
-                  console.log('Connected to live server...');
+                  // console.log('Connected to live server...');
                 });
 
                 socket.on('message', (message)=> {

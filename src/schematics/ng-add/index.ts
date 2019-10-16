@@ -88,13 +88,13 @@ function updateArchitect(options: NgAddOptions): Rule {
 function addPackageJsonDependencies(): Rule {
   return (host: Tree, context: SchematicContext) => {
 
-    // TODO: Get latest electroin dependency or let user choose
+    // TODO: Get latest electron dependency or let user choose
     const dependencies: NodeDependency[] = [
-      { type: NodeDependencyType.Dev, version: "~4.0.0", name: "electron" },
-      { type: NodeDependencyType.Dev, version: "20.39.0", name: "electron-builder" },
-      { type: NodeDependencyType.Dev, version: "^8.10.46", name: "@types/node" },
+      { type: NodeDependencyType.Dev, version: "^6.0.12", name: "electron" },
+      { type: NodeDependencyType.Dev, version: "~12.7.12", name: "@types/node" },
       { type: NodeDependencyType.Dev, version: "next", name: "@richapps/ngnode" },
-      { type: NodeDependencyType.Dev, version: "next", name: "@richapps/build-angular" }
+      { type: NodeDependencyType.Dev, version: "next", name: "@richapps/build-angular" },
+      { type: NodeDependencyType.Dev, version: "^6.2.0", name: "ts-loader" }
     ];
 
     dependencies.forEach(dependency => {
