@@ -112,7 +112,6 @@ export const execute = (options: NGTronBuildOptions, context: BuilderContext): O
             return run.output.pipe(
               tap((builderOutput: BuilderOutput) => {
                 if (builderOutput.info.name.startsWith('@richapps/ngnode') && options.serve) {
-                  console.log("All Build? ", allBuildOnce);
                   if (allBuildOnce) {
                     openElectron(join(context.workspaceRoot, options.outputPath), context).subscribe();
                   }
