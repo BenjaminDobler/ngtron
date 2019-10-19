@@ -207,7 +207,7 @@ export function getTSAppConfig(host: Tree, project: string): any {
 export const addElectronProject = (options) => {
   console.log('⚙️addElectronProject');
 
-  const dir = options.singleProject ? options.rendererRoot + '/electron' : options.projectRoot + '/' + options.project + options.rendererPrefix;
+  const dir = options.singleProject ? options.rendererRoot + '/electron' : options.projectRoot + '/' + options.project + options.electronPrefix;
   return addElectronFiles(dir);
 }
 

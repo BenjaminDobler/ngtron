@@ -1,6 +1,6 @@
 {
   "name": "@richapps/ngtron",
-  "version": "0.0.25-beta.2",
+  "version": "0.0.25-beta.5",
   "description": "Easily serve and build angular based electron applications",
   "author": {
     "name": "Benjamin Dobler",
@@ -20,25 +20,23 @@
   "schematics": "./dist/schematics/collection.json",
   "builders": "./dist/builders/builders.json",
   "dependencies": {
-    "@angular-devkit/build-angular": "^0.800.0",
-    "@angular-devkit/core": "^8.0.0",
-    "@angular-devkit/schematics": "^8.0.0",
-    "@angular/compiler": "^8.0.0",
-    "@angular/compiler-cli": "^8.0.0",
-    "@angular/core": "^8.0.0",
-    "@schematics/angular": "^8.0.0",
-    "ts-loader": "6.0.4",
+    "@angular-devkit/core": ">=8.0.0",
+    "@angular-devkit/schematics": ">=8.0.0",
+    "@schematics/angular": ">=8.3.12",
+    "fs-extra": "8.1.0",
     "webpack-inject-plugin": "^1.5.3",
     "ws": "^7.1.2"
   },
+  "peerDependencies": {
+    "@angular-devkit/build-angular": ">=0.803.12"
+  },
   "devDependencies": {
+    "@angular-devkit/build-angular": ">=0.803.12",
     "@types/jasmine": "^3.3.13",
     "@types/node": "~11.9.0",
-    "@types/webpack": "^4.4.32",
+    "@types/webpack": "^4.39.3",
     "@types/webpack-dev-server": "^3.1.6",
     "cpx": "^1.5.0",
-    "electron": "^4.2.2",
-    "electron-builder": "21.2.0",
     "jasmine": "^3.0.0",
     "quicktype": "^15.0.194",
     "tslint": "~5.15.0",

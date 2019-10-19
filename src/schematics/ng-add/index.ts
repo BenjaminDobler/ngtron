@@ -26,6 +26,7 @@ function addPackageJsonDependencies(): Rule {
     // TODO: Get latest electron dependency or let user choose
     const dependencies: NodeDependency[] = [
       { type: NodeDependencyType.Dev, version: "^6.0.12", name: "electron" },
+      { type: NodeDependencyType.Dev, version: "^21.2.0", name: "electron-builder" },
       { type: NodeDependencyType.Dev, version: "~12.7.12", name: "@types/node" },
       { type: NodeDependencyType.Dev, version: "next", name: "@richapps/ngnode" },
       { type: NodeDependencyType.Dev, version: "next", name: "@richapps/build-angular" },
