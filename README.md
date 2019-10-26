@@ -5,11 +5,10 @@
 Angular + Electron = :heart:
 
 Angular CLI extension based on Schematics and Builders for building angular based electron applications.
-This project uses the new architect API which is currently beta and will ship with angular 8 (so soon!).
+This project uses the new architect API which was introduced in Angular 8.
 **So you can only use this addon starting with angular 8!**
 
 Ngtron will setup your angular workspace with the finest electron tools available. [Electron Builder](https://github.com/electron-userland/electron-builder) is added to package your projects for mac, windows and linux.
-[Electron Reload](https://www.npmjs.com/package/electron-reload) is used to automatically reload your app while developing whenever you make code changes.
 
 [![npm version](https://badge.fury.io/js/%40richapps%2Fngtron.svg)](https://www.npmjs.com/@richapps/ngtron)
 
@@ -65,18 +64,22 @@ You can now run your app with:
 And package your app with:
 `ng run myapp-electron:package`
 
-# Using an existing angular project as the renderer for an electron app
+## Using an existing angular project as the renderer for an electron app
 
 `ng add @richapps/ngtron`
+
 `ng generate @richapps/ngtron:app --project=my-existing-project`
 
-# Create a root level ngtron project
+## Create a root level ngtron project
 
 `ng new <my-project>`
+
 `ng add @richapps/ngtron`
+
 `ng generate @richapps/ngtron:app --project=<my-project>`
 
-# Adding ngtron to an existing root level project
+## Adding ngtron to an existing root level project
 
 `ng add @richapps/ngtron`
+
 `ng generate @richapps/ngtron:app --project=my-existing-project`
