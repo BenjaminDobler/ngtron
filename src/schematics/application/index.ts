@@ -123,7 +123,7 @@ function updateElectronWorkspace(options): Rule {
 
 
 function updateMainWorkspace(options): Rule {
-  console.log("⚙️updateMainWorkspace");
+  console.log("⚙️  updateMainWorkspace");
 
   return async (tree: Tree, _context: SchematicContext) => {
     const workspace: any = getWorkspace2(tree);
@@ -155,7 +155,7 @@ function updateMainWorkspace(options): Rule {
 }
 
 function updateRendererWorkspace(options): Rule {
-  console.log("⚙️updateRendererWorkspace");
+  console.log("⚙️  updateRendererWorkspace");
 
   return async (tree: Tree, _context: SchematicContext) => {
     const workspace: any = getWorkspace2(tree);
@@ -167,7 +167,7 @@ function updateRendererWorkspace(options): Rule {
 
 
 function updateRendererTSConfig(options): Rule {
-  console.log('️️⚙️updateRendererTSConfig');
+  console.log('️️⚙️  updateRendererTSConfig');
   return async (tree: Tree, _context: SchematicContext) => {
     const tsConfigRoot = options.monoRepo ? options.rendererRoot : '';
     const config: any = getTSAppConfig(tree, tsConfigRoot);
@@ -205,14 +205,14 @@ export function getTSAppConfig(host: Tree, project: string): any {
 
 
 export const addElectronProject = (options) => {
-  console.log('⚙️addElectronProject');
+  console.log('⚙️  addElectronProject');
 
   const dir = options.singleProject ? options.rendererRoot + '/electron' : options.projectRoot + '/' + options.project + options.electronPrefix;
   return addElectronFiles(dir);
 }
 
 export const addMainProject = (options) => {
-  console.log('⚙️addMainProject');
+  console.log('⚙️  addMainProject');
 
   const dir = options.singleProject ? options.rendererRoot + '/electron' : options.projectRoot + '/' + options.project + options.mainPrefix;
   const rendererName = options.singleProject ? options.project : options.project + options.rendererPrefix;
@@ -220,7 +220,7 @@ export const addMainProject = (options) => {
 }
 
 export const addRendererProject = (options: NgGenerateOptions) => {
-  console.log('⚙️addRendererProject');
+  console.log('⚙️  addRendererProject');
 
   const rendererName = options.singleProject ? options.project : options.project + options.rendererPrefix;
   return externalSchematic('@schematics/angular', 'application', { name: rendererName });
