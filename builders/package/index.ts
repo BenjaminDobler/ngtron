@@ -17,6 +17,7 @@ export const execute = (options: DevServerBuilderOptions, context: BuilderContex
     serverOptions = await context.getTargetOptions(browserTarget);
     const buildOptions = await context.getTargetOptions({
       project: context.target.project,
+      configuration: context.target.configuration,
       target: "build"
     });
     buildOptions.browserTarget = context.target.project + ":package-electron";
