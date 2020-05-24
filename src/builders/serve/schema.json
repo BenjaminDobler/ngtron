@@ -1,0 +1,15 @@
+{
+  "$schema": "http://json-schema.org/schema",
+  "title": "Dev Server Target",
+  "description": "Dev Server target options for Build Facade.",
+  "type": "object",
+  "properties": {
+    "buildTarget": {
+      "type": "string",
+      "description": "Target to serve.",
+      "pattern": ".+:.+(:.+)?"
+    }
+  },
+  "additionalProperties": false,
+  "required": ["buildTarget"]
+}

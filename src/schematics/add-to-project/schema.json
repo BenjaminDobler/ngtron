@@ -1,0 +1,15 @@
+{
+  "$schema": "http://json-schema.org/schema",
+  "id": "ngtron-generate",
+  "title": "NGTron application schematic",
+  "type": "object",
+  "properties": {
+    "project": {
+      "type": "string",
+      "description": "The name of the project.",
+      "x-prompt": "What name should your project have?"
+    }
+  },
+  "required": [],
+  "additionalProperties": false
+}

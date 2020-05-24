@@ -11,14 +11,14 @@
     "noImplicitThis": true,
     "noUnusedParameters": false,
     "noUnusedLocals": false,
-    "rootDir": "/",
     "skipDefaultLibCheck": true,
     "skipLibCheck": true,
     "sourceMap": true,
     "strictNullChecks": false,
     "target": "es6",
-    "types": ["jasmine", "node"]
+    "types": ["jasmine", "node"],
+    "outDir": "dist"
   },
-  "include": ["builders/**/*", "schematics/**/*"],
-  "exclude": ["schematics/*/files/**/*"]
+  "include": ["src/**/*"],
+  "exclude": ["src/schematics/files/**/*"]
 }

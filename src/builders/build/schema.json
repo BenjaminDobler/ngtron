@@ -1,0 +1,49 @@
+{
+  "$schema": "http://json-schema.org/schema",
+  "title": "Dev Server Target",
+  "description": "Dev Server target options for Build Facade.",
+  "type": "object",
+  "properties": {
+    "rendererTargets": {
+      "description": "One or more renderer targets for your project (angular projects)",
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": ".+:.+(:.+)?"
+      }
+    },
+    "mainTarget": {
+      "description": "The main process for your electron project (a node app)",
+      "type": "string",
+      "pattern": ".+:.+(:.+)?"
+    },
+    "devServerPort": {
+      "type": "number",
+      "description": "the port where the dev server listens for changes.",
+      "default": 6000
+    },
+    "outputPath": {
+      "type": "string",
+      "description": "Path where the electron app will be build."
+    },
+    "watch": {
+      "type": "boolean",
+      "description": ""
+    },
+    "serve": {
+      "type": "boolean",
+      "description": "",
+      "boolean": false
+    },
+    "rendererOutputPath": {
+      "type": "string",
+      "description": "Path where the renderer apps will be created."
+    },
+    "package": {
+      "type": "string",
+      "description": "Path to the package json for the electron app."
+    }
+  },
+  "additionalProperties": false,
+  "required": ["mainTarget", "rendererTargets"]
+}
