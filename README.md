@@ -18,7 +18,7 @@ An typical electron project consists of node application which is called the **m
 
 ## Installation
 
-NGTron supports the ng-add schematic to setupn an angular workspace. Running the schematic will install the @richapps/ngtron packages and setup further dependencies like electron-builder.
+NGTron supports the ng-add schematic to setup an angular workspace. Running the schematic will install the @richapps/ngtron packages and setup further dependencies like electron-builder.
 
 ```bash
 ng add @richapps/ngtron
@@ -32,7 +32,9 @@ The recommended way of using ngtron is to use multiple projects for each type (m
 
 `ng new workspace --create-application=false`
 `ng add @richapps/ngtron`
-`ng generate @richapps/ngtron:app --project=myapp`
+`ng generate @richapps/ngtron:app`
+
+You will be prompted for a project name. Let's assue you choose my_app as the project name.
 
 This will generate three projects in your worspace.
 
@@ -41,6 +43,7 @@ This will generate three projects in your worspace.
 
 - **_myapp-main_**
   This projects is a node project which will used for the main process of your application
+  
 - **_myapp-renderer_**
   This is the angular project where you can define your renderer code (Note: you can add more renderer projects if you for example want to open different angular apps in different windows of your electron app).
 

@@ -1,6 +1,6 @@
 {
   "name": "@richapps/ngtron",
-  "version": "0.0.25-beta.6",
+  "version": "1.0.0-rc.6",
   "description": "Easily serve and build angular based electron applications",
   "author": {
     "name": "Benjamin Dobler",
@@ -13,8 +13,9 @@
   },
   "license": "MIT",
   "scripts": {
-    "build": "tsc -p tsconfig.json && npm run copy:json && npm run copy:files",
+    "build": "tsc -p tsconfig.json && npm run copy:json && npm run copy:js && npm run copy:files",
     "copy:json": "cpx 'src/**/*.json' ./dist",
+    "copy:js": "cpx 'src/**/*.js' ./dist",
     "copy:files": "cpx \"./src/schematics/files/**/*\" \"./dist/schematics/files\""
   },
   "schematics": "./dist/schematics/collection.json",
@@ -23,6 +24,7 @@
     "@angular-devkit/core": ">=8.0.0",
     "@angular-devkit/schematics": ">=8.0.0",
     "@schematics/angular": ">=8.3.12",
+    "find-free-port": "^2.0.0",
     "fs-extra": "8.1.0",
     "webpack-inject-plugin": "^1.5.3",
     "ws": "^7.1.2"
@@ -32,11 +34,15 @@
   },
   "devDependencies": {
     "@angular-devkit/build-angular": ">=0.803.12",
+    "@angular/compiler-cli": "^9.1.9",
     "@types/jasmine": "^3.3.13",
     "@types/node": "~11.9.0",
     "@types/webpack": "^4.39.3",
     "@types/webpack-dev-server": "^3.1.6",
+    "codelyzer": "^5.2.2",
     "cpx": "^1.5.0",
+    "electron-builder": "^22.6.1",
+    "inquirer": "^7.1.0",
     "jasmine": "^3.0.0",
     "quicktype": "^15.0.194",
     "tslint": "~5.15.0",

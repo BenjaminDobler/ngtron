@@ -19,7 +19,8 @@
     },
     "devServerPort": {
       "type": "number",
-      "description": "the port where the dev server listens for changes."
+      "description": "the port where the dev server listens for changes.",
+      "default": 6000
     },
     "outputPath": {
       "type": "string",
