@@ -25,12 +25,14 @@ export interface NGTronBuildOptions extends JsonObject {
 
 export const execute = (options: NGTronBuildOptions, context: BuilderContext): Observable<BuilderOutput> => {
     let devServer: DevServer;
+    const electronPkgPath = join(context.workspaceRoot, options.package);
+    const mainTarget = targetFromTargetString(options.mainTarget);
+    let mainOptions: any;
 
     async function init() {
         removeSync(join(context.workspaceRoot, options.outputPath));
         ensureDirSync(join(context.workspaceRoot, options.outputPath));
 
-        const electronPkgPath = join(context.workspaceRoot, options.package);
         const electronPkgString = readFileSync(electronPkgPath, { encoding: 'utf-8' });
         const electronPkg = JSON.parse(electronPkgString);
 
@@ -74,10 +76,9 @@ export const execute = (options: NGTronBuildOptions, context: BuilderContext): O
         }
 
         // Add the node js main target
-        const mainTarget = targetFromTargetString(options.mainTarget);
-        const mainOptions: any = await context.getTargetOptions(mainTarget);
+        mainOptions = await context.getTargetOptions(mainTarget);
         const mainOverrides: any = {
-            watch: true,
+            watch: options.watch,
             outputPath: options.outputPath,
             webpackConfigObject: mainWebpackConfig,
         };
@@ -91,12 +92,6 @@ export const execute = (options: NGTronBuildOptions, context: BuilderContext): O
                 symlinkSync(workspaceNodeModules, electronBuildNodeModules, 'junction');
             }
         }
-
-        // copy electron package.json
-        const electronPKG = JSON.parse(readFileSync(electronPkgPath, { encoding: 'utf-8' }));
-        electronPKG.main = basename(mainOptions.main, '.ts') + '.js';
-        const electronPkgDistPath = join(context.workspaceRoot, options.outputPath, 'package.json');
-        writeFileSync(electronPkgDistPath, JSON.stringify(electronPKG, null, 4), { encoding: 'utf-8' });
 
         return builderRuns$;
     }
@@ -130,6 +125,13 @@ export const execute = (options: NGTronBuildOptions, context: BuilderContext): O
                 ),
                 tap(() => {
                     if (!allBuildOnce) {
+                        // copy electron package.json
+                        const electronPKG = JSON.parse(readFileSync(electronPkgPath, { encoding: 'utf-8' }));
+                        const main = Array.isArray(mainOptions.main) ? mainOptions.main[0] : mainOptions.main;
+                        electronPKG.main = basename(main, '.ts') + '.js';
+                        const electronPkgDistPath = join(context.workspaceRoot, options.outputPath, 'package.json');
+                        writeFileSync(electronPkgDistPath, JSON.stringify(electronPKG, null, 4), { encoding: 'utf-8' });
+
                         openElectron(join(context.workspaceRoot, options.outputPath), context).subscribe();
                         allBuildOnce = true;
                     }
