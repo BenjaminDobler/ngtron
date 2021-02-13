@@ -19,7 +19,9 @@
     "copy:files": "cpx \"./src/schematics/files/**/*\" \"./dist/schematics/files\"",
     "link:schematic": "npm link && cd sandbox/singleproject-sandbox && npm link @richapps/ngtron",
     "clean": "git checkout HEAD -- sandbox && git clean -f -d sandbox",
-    "test-schematic-single": "cd sandbox/singleproject-sandbox && ng generate @richapps/ngtron:app --project=singleproject-sandbox --singleProject=true"
+    "test-schematic-single": "cd sandbox/singleproject-sandbox && ng generate @richapps/ngtron:app --project=singleproject-sandbox --singleProject=true",
+    "test-schematic-workspace-existing": "cd sandbox/workspace-existing && ng generate @richapps/ngtron:app --project=app"
+
   },
   "schematics": "./dist/schematics/collection.json",
   "builders": "./dist/builders/builders.json",
